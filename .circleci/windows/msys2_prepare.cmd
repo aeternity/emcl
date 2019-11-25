@@ -131,11 +131,16 @@ SET BASH="%WIN_MSYS2_ROOT%\usr\bin\bash.exe"
 %BASH% -lc "pacman --noconfirm -Rsc %PACMAN_PACKAGES_REMOVE% > /dev/null || true"
 
 @call:log Install required tools
+
 %BASH% -lc "pacman --noconfirm --needed -S %PACMAN_PACKAGES%"
 
 @call:log Remove link.exe from msys2, so it does not interfere with MSVC's link.exe
 
 %BASH% -lc "rm -f /bin/link.exe /usr/bin/link.exe"
+
+@call:log Fix home path resolution in msys2
+
+%BASH% -lc "sed -i -e 's/^db_name:.*/db_name: windows cygwin desc/g' nsswitch.conf"
 
 ENDLOCAL
 

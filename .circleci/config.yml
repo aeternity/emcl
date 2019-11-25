@@ -147,6 +147,7 @@ commands:
       - run:
           name: Install MSYS2
           command: .circleci\windows\msys2_prepare
+          no_output_timeout: 20m
       - save_windows_package_cache:
           install_path: << parameters.install_path >>
   windows_install_deps:
@@ -212,9 +213,6 @@ jobs:
           otp_install_path: << parameters.otp_install_path >>
           otp_version: << parameters.otp_version >>
           msys_install_path: << parameters.msys_install_path >>
-      - run:
-          name: Prepare environment
-          command: .circleci\windows\msys2_prepare -v
       - run:
           name: Build
           command: .circleci\windows\build

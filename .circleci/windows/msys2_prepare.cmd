@@ -140,7 +140,7 @@ SET BASH="%WIN_MSYS2_ROOT%\usr\bin\bash.exe"
 
 @call:log Fix home path resolution in msys2
 
-%BASH% -lc "sed -i -e 's/^db_host:.*/db_host: windows/g' /etc/nsswitch.conf"
+%BASH% -lc "sed -i -e 's/^db_home:.*/db_home: windows/g' /etc/nsswitch.conf"
 
 ENDLOCAL
 

@@ -32,7 +32,7 @@ references:
         ./rebar3 compile
         ./rebar3 eunit -v
 
-  windows_cache_version: &windows_cache_version "v1"
+  windows_cache_version: &windows_cache_version "v2"
   windows_working_directory: &windows_working_directory C:\Users\circleci\project
   windows_env: &windows_env
     OTP_VERSION: << parameters.otp_version >>

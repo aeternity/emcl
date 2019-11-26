@@ -1,0 +1,232 @@
+version: 2.1
+
+orbs:
+  win: circleci/windows@1.0.0
+
+executors:
+  builder_otp20:
+    docker:
+      - image: erlang:20
+  builder_otp21:
+    docker:
+      - image: erlang:21
+  builder_otp22:
+    docker:
+      - image: erlang:22
+  builder_nix_alpine:
+    docker:
+      - image: nixorg/nix:circleci
+
+references:
+  install_os_deps: &install_os_deps
+    run:
+      name: Install OS dependancies
+      command: |
+        apt-get update
+        apt-get -qq -y install libgmp-dev autoconf build-essential
+  build_test_steps: &build_test_steps
+    run:
+      name: Build and test
+      command: |
+        ./rebar3 get-deps
+        ./rebar3 compile
+        ./rebar3 eunit -v
+
+  windows_cache_version: &windows_cache_version "v2"
+  windows_working_directory: &windows_working_directory C:\Users\circleci\project
+  windows_env: &windows_env
+    OTP_VERSION: << parameters.otp_version >>
+    WIN_OTP_PATH: << parameters.otp_install_path >>
+    WIN_MSYS2_ROOT: << parameters.msys_install_path >>
+    MSYSCON: defterm
+    ANSICON: true
+    MSVC_VERSION: 14.22.27905
+    VCVARSALL: C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvarsall
+  windows_container: &windows_container
+    executor:
+      name: win/vs2019
+      shell: cmd.exe
+    parameters:
+      msys_install_path:
+        default: C:\tools\msys64
+        type: string
+      otp_install_path:
+        default: C:\tools\erl
+        type: string
+      otp_version:
+        default: "21.3"
+        type: string
+    working_directory: *windows_working_directory
+    environment: *windows_env
+
+  macos_package_cache_key: &macos_package_cache_key macos-package-cache-v1
+  restore_macos_package_cache: &restore_macos_package_cache
+    restore_cache:
+      key: *macos_package_cache_key
+  save_macos_package_cache: &save_macos_package_cache
+    save_cache:
+      key: *macos_package_cache_key
+      paths:
+        - "/usr/local/Homebrew"
+        - "/usr/local/opt"
+        - "/usr/local/Cellar"
+
+commands:
+  restore_windows_erl_cache:
+    parameters:
+      windows_cache_version:
+        default: *windows_cache_version
+        type: string
+      otp_version:
+        type: string
+    steps:
+      - restore_cache:
+          keys:
+            - windows-erl<< parameters.otp_version >>-cache-<< parameters.windows_cache_version >>-{{ .Branch }}-
+            - windows-erl<< parameters.otp_version >>-cache-<< parameters.windows_cache_version >>-master-
+            - windows-erl<< parameters.otp_version >>-cache-<< parameters.windows_cache_version >>-
+  save_windows_erl_cache:
+    parameters:
+      windows_cache_version:
+        default: *windows_cache_version
+        type: string
+      install_path:
+        type: string
+      otp_version:
+        type: string
+    steps:
+      - save_cache:
+          key: windows-erl<< parameters.otp_version >>-cache-<< parameters.windows_cache_version >>-{{ .Branch }}-
+          paths:
+            - << parameters.install_path >>
+  install_win_otp:
+    parameters:
+      install_path:
+        type: string
+      otp_version:
+        type: string
+    steps:
+      - restore_windows_erl_cache:
+          otp_version: << parameters.otp_version >>
+      - run:
+          name: Install Erlang/OTP << parameters.otp_version >>
+          command: .\.circleci\windows\install_erlang << parameters.otp_version >> << parameters.install_path >>
+      - save_windows_erl_cache:
+          otp_version: << parameters.otp_version >>
+          install_path: << parameters.install_path >>
+  restore_windows_package_cache:
+    parameters:
+      windows_cache_version:
+        default: *windows_cache_version
+        type: string
+    steps:
+     - restore_cache:
+        keys:
+          - windows-package-cache-<< parameters.windows_cache_version >>-{{ .Branch }}-
+          - windows-package-cache-<< parameters.windows_cache_version >>-master-
+          - windows-package-cache-<< parameters.windows_cache_version >>-
+  save_windows_package_cache:
+    parameters:
+      windows_cache_version:
+        type: string
+        default: *windows_cache_version
+      install_path:
+        type: string
+    steps:
+      - save_cache:
+          key: windows-package-cache-<< parameters.windows_cache_version >>-{{ .Branch }}-
+          paths:
+            - << parameters.install_path >>
+  install_win_msys2:
+    parameters:
+      install_path:
+        default: C:\tools\msys64
+        type: string
+    steps:
+      - restore_windows_package_cache
+      - run:
+          name: Install MSYS2
+          command: .circleci\windows\msys2_prepare -v
+          no_output_timeout: 20m
+      - save_windows_package_cache:
+          install_path: << parameters.install_path >>
+  windows_install_deps:
+    parameters:
+      msys_install_path:
+        type: string
+      otp_install_path:
+        type: string
+      otp_version:
+        type: string
+    steps:
+      - checkout
+      - install_win_otp:
+          install_path: << parameters.otp_install_path >>
+          otp_version: << parameters.otp_version >>
+      - install_win_msys2:
+          install_path: << parameters.msys_install_path >>
+
+jobs:
+  build_otp20:
+    executor: builder_otp20
+    steps:
+      - checkout
+      - *install_os_deps
+      - *build_test_steps
+  build_otp21:
+    executor: builder_otp21
+    steps:
+      - checkout
+      - *install_os_deps
+      - *build_test_steps
+  build_otp22:
+    executor: builder_otp22
+    steps:
+      - checkout
+      - *install_os_deps
+      - *build_test_steps
+  build_nix:
+    executor: builder_nix_alpine
+    steps:
+      - checkout
+      - run: nix-shell -j auto --run "./rebar3 do get-deps, compile, eunit -v"
+  build_macos:
+    macos:
+      xcode: "10.0.0" # 10.0.0 is macOS 10.13.6
+    steps:
+      - checkout
+      - *restore_macos_package_cache
+      - run:
+          name: Install required tools
+          command: |
+            brew update
+            brew install gmp erlang@21
+            brew link --force gmp erlang@21
+      - *save_macos_package_cache
+      - *build_test_steps
+
+  build_win32:
+    <<: *windows_container
+    steps:
+      - run: systeminfo
+      - windows_install_deps:
+          otp_install_path: << parameters.otp_install_path >>
+          otp_version: << parameters.otp_version >>
+          msys_install_path: << parameters.msys_install_path >>
+      - run:
+          name: Build
+          command: .circleci\windows\build
+      - run:
+          name: Test
+          command: .circleci\windows\test
+
+workflows:
+  version: 2
+  build-test:
+    jobs:
+      - build_otp20
+      - build_otp21
+      - build_otp22
+      - build_nix
+      - build_macos
+      - build_win32

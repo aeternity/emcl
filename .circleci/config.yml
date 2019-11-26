@@ -146,7 +146,7 @@ commands:
       - restore_windows_package_cache
       - run:
           name: Install MSYS2
-          command: .circleci\windows\msys2_prepare
+          command: .circleci\windows\msys2_prepare -v
           no_output_timeout: 20m
       - save_windows_package_cache:
           install_path: << parameters.install_path >>

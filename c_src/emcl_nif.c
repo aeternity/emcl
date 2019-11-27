@@ -1,6 +1,6 @@
 #include "erl_nif.h"
-#include <mcl/bn_c384_256.h>
 #include <string.h>
+#include <mcl/bn_c384_256.h>
 
 static
 int enif_mcl_load(ErlNifEnv *env, void **priv_data, ERL_NIF_TERM load_info) {
@@ -140,10 +140,15 @@ static ERL_NIF_TERM enif_return_gt(int ok, ErlNifEnv *env, const mclBnGT *x){
 }
 
 static int check_tag(ErlNifEnv *env, ERL_NIF_TERM atom, const char *tag, unsigned int sz){
-  char buf[sz + 1];
+  char *buf;
+  buf = (char*)calloc(sz + 1, sizeof(char));
   if(!enif_get_atom(env, atom, buf, sz + 1, ERL_NIF_LATIN1)
-     || strncmp(tag, buf, sz)) return 0;
+     || strncmp(tag, buf, sz)) {
+	  free(buf);
+	  return 0;
+  }
 
+  free(buf);
   return 1;
 }
 
@@ -371,22 +376,39 @@ ERL_NIF_TERM enif_mcl_bn_fr_lagrange_interpolation(ErlNifEnv *env, int argc, ERL
     return enif_make_badarg(env);
   }
 
-  mclBnFr xs[k], ys[k], res;
+  mclBnFr *xs, *ys, res;
+  xs = (mclBnFr*)calloc(k, sizeof(mclBnFr));
+  ys = (mclBnFr*)calloc(k, sizeof(mclBnFr));
+
   ERL_NIF_TERM exs = argv[0], ex, eys = argv[1], ey;
 
   while(enif_get_list_cell(env, exs, &ex, &exs) && enif_get_list_cell(env, eys, &ey, &eys)){
-    if(!get_fr(env, ex, &xs[i]) || !get_fr(env, ey, &ys[i]))
+    if(!get_fr(env, ex, &xs[i]) || !get_fr(env, ey, &ys[i])) {
+	    free(xs);
+	    free(ys);
       return enif_make_badarg(env);
+    }
 
     i++;
   }
 
-  if(i != k) return enif_make_badarg(env);
+  if(i != k) {
+	    free(xs);
+	    free(ys);
+	  return enif_make_badarg(env);
+	  }
 
-  if(!mclBn_FrLagrangeInterpolation(&res, xs, ys, k))
+  if(!mclBn_FrLagrangeInterpolation(&res, xs, ys, k)) {
+	    free(xs);
+	    free(ys);
+
     return enif_return_fr(1, env, &res);
-  else
+  }
+  else {
+	    free(xs);
+	    free(ys);
     return error_tuple(env, "bad_input");
+  }
 }
 
 static
@@ -404,21 +426,31 @@ ERL_NIF_TERM enif_mcl_bn_fr_eval_polynomial(ErlNifEnv *env, int argc, ERL_NIF_TE
     return enif_make_badarg(env);
   }
 
-  mclBnFr cs[k], res;
+  mclBnFr *cs, res;
+  cs = (mclBnFr*)calloc(k, sizeof(mclBnFr));
+
   ERL_NIF_TERM ecs = argv[0], ec;
 
   while(enif_get_list_cell(env, ecs, &ec, &ecs)){
     if(!get_fr(env, ec, &cs[i++])){
+	    free(cs);
       return enif_make_badarg(env);
     }
   }
 
-  if(i != k) return enif_make_badarg(env);
+  if(i != k) {
+	    free(cs);
+	  return enif_make_badarg(env);
+  }
 
-  if(!mclBn_FrEvaluatePolynomial(&res, cs, k, &x))
+  if(!mclBn_FrEvaluatePolynomial(&res, cs, k, &x)) {
+	    free(cs);
     return enif_return_fr(1, env, &res);
-  else
+  }
+  else {
+	    free(cs);
     return error_tuple(env, "bad_input");
+  }
 }
 
 // -----
@@ -699,24 +731,39 @@ ERL_NIF_TERM enif_mcl_bn_g1_lagrange_interpolation(ErlNifEnv *env, int argc, ERL
     return enif_make_badarg(env);
   }
 
-  mclBnFr xs[k];
-  mclBnG1 ys[k], res;
+  mclBnFr *xs;
+  xs = (mclBnFr*)calloc(k, sizeof(mclBnFr));
+
+  mclBnG1 *ys, res;
+  ys = (mclBnG1*)calloc(k, sizeof(mclBnG1));
   ERL_NIF_TERM exs = argv[0], ex, eys = argv[1], ey;
 
   while(enif_get_list_cell(env, exs, &ex, &exs) && enif_get_list_cell(env, eys, &ey, &eys)){
     if(!get_fr(env, ex, &xs[i]) || !get_g1(env, ey, &ys[i])){
+	    free(xs);
+	    free(ys);
       return enif_make_badarg(env);
     }
 
     i++;
   }
 
-  if(i != k) return enif_make_badarg(env);
+  if(i != k) {
+	    free(xs);
+	    free(ys);
+	  return enif_make_badarg(env);
+  }
 
-  if(!mclBn_G1LagrangeInterpolation(&res, xs, ys, k))
+  if(!mclBn_G1LagrangeInterpolation(&res, xs, ys, k)) {
+	    free(xs);
+	    free(ys);
     return enif_return_g1(1, env, &res);
-  else
+  }
+  else {
+	    free(xs);
+	    free(ys);
     return error_tuple(env, "bad_input");
+  }
 }
 
 static
@@ -734,21 +781,29 @@ ERL_NIF_TERM enif_mcl_bn_g1_eval_polynomial(ErlNifEnv *env, int argc, ERL_NIF_TE
     return enif_make_badarg(env);
   }
 
-  mclBnG1 cs[k], res;
+  mclBnG1 *cs, res;
+  cs = (mclBnG1*)calloc(k, sizeof(mclBnG1));
   ERL_NIF_TERM ecs = argv[0], ec;
 
   while(enif_get_list_cell(env, ecs, &ec, &ecs)){
     if(!get_g1(env, ec, &cs[i++])){
+	    free(cs);
       return enif_make_badarg(env);
     }
   }
 
-  if(i != k) return enif_make_badarg(env);
+  if(i != k) {
+	    free(cs);
+	  return enif_make_badarg(env);
+  }
 
-  if(!mclBn_G1EvaluatePolynomial(&res, cs, k, &x))
+  if(!mclBn_G1EvaluatePolynomial(&res, cs, k, &x)) {
     return enif_return_g1(1, env, &res);
-  else
+  }
+  else {
+	    free(cs);
     return error_tuple(env, "bad_input");
+  }
 }
 
 // -----
@@ -876,24 +931,39 @@ ERL_NIF_TERM enif_mcl_bn_g2_lagrange_interpolation(ErlNifEnv *env, int argc, ERL
     return enif_make_badarg(env);
   }
 
-  mclBnFr xs[k];
-  mclBnG2 ys[k], res;
+  mclBnFr *xs;
+  xs = (mclBnFr*)calloc(k, sizeof(mclBnFr));
+  mclBnG2 *ys, res;
+  ys = (mclBnG2*)calloc(k, sizeof(mclBnG2));
   ERL_NIF_TERM exs = argv[0], ex, eys = argv[1], ey;
 
   while(enif_get_list_cell(env, exs, &ex, &exs) && enif_get_list_cell(env, eys, &ey, &eys)){
     if(!get_fr(env, ex, &xs[i]) || !get_g2(env, ey, &ys[i])){
+	    free(xs);
+	    free(ys);
       return enif_make_badarg(env);
     }
 
     i++;
   }
 
-  if(i != k) return enif_make_badarg(env);
+  if(i != k) {
+	    free(xs);
+	    free(ys);
+	  return enif_make_badarg(env);
+  }
 
-  if(!mclBn_G2LagrangeInterpolation(&res, xs, ys, k))
+  if(!mclBn_G2LagrangeInterpolation(&res, xs, ys, k)) {
+	    free(xs);
+	    free(ys);
     return enif_return_g2(1, env, &res);
+  }
   else
+	  {
+	    free(xs);
+	    free(ys);
     return error_tuple(env, "bad_input");
+	  }
 }
 
 static
@@ -911,21 +981,30 @@ ERL_NIF_TERM enif_mcl_bn_g2_eval_polynomial(ErlNifEnv *env, int argc, ERL_NIF_TE
     return enif_make_badarg(env);
   }
 
-  mclBnG2 cs[k], res;
+  mclBnG2 *cs, res;
+  cs = (mclBnG2*)calloc(k, sizeof(mclBnG2));
   ERL_NIF_TERM ecs = argv[0], ec;
 
   while(enif_get_list_cell(env, ecs, &ec, &ecs)){
     if(!get_g2(env, ec, &cs[i++])){
+	    free(cs);
       return enif_make_badarg(env);
     }
   }
 
-  if(i != k) return enif_make_badarg(env);
+  if(i != k) {
+	    free(cs);
+	  return enif_make_badarg(env);
+  }
 
-  if(!mclBn_G2EvaluatePolynomial(&res, cs, k, &x))
+  if(!mclBn_G2EvaluatePolynomial(&res, cs, k, &x)) {
+	    free(cs);
     return enif_return_g2(1, env, &res);
-  else
+  }
+  else {
+	    free(cs);
     return error_tuple(env, "bad_input");
+  }
 }
 
 // -----

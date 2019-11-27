@@ -1,0 +1,18 @@
+mcl_src_dir := c_src/mcl
+cybozulib_ext_src_dir := c_src/cybozulib_ext
+
+win32_mcl: $(mcl_src_dir)/lib/mcl.lib
+	echo ${CFLAGS}
+
+clean_win32_mcl:
+	rm -rf $(cybozulib_ext_src_dir)
+	make -C $(mcl_src_dir) clean
+	rm -f $(mcl_src_dir)/lib/*.lib $(mcl_src_dir)/lib/*.dll $(mcl_src_dir)/lib/*.exp
+
+.ONESHELL:
+$(mcl_src_dir)/lib/mcl.lib: $(cybozulib_ext_src_dir)
+	cd $(mcl_src_dir)
+	cmd //c mklib.bat 
+
+$(cybozulib_ext_src_dir):
+	git clone https://github.com/herumi/cybozulib_ext $@

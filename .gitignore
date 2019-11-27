@@ -17,4 +17,8 @@ _build
 .idea
 *.iml
 rebar3.crashdump
-/c_src/emcl_nif.d
+c_src/emcl_nif.d
+c_src/cybozulib_ext/
+priv/emcl_nif.dll
+priv/emcl_nif.lib
+priv/emcl_nif.exp

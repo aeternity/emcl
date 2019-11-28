@@ -14,6 +14,10 @@ reset="\\e[0m"
 
 echo -e "${bold}Start test${reset}"
 cd ${PROJECT_ROOT}
-time ./rebar3 eunit -v
+if ! time ./rebar3 eunit -v; then
+    echo "Retrying..."
+    export DEBUG=1
+    ./rebar3 eunit -v
+fi
 
 echo -e "${bold}Done.${reset}"

@@ -14,6 +14,10 @@ reset="\\e[0m"
 
 echo -e "${bold}Start build${reset}"
 cd ${PROJECT_ROOT}
-time ./rebar3 do get-deps, compile
+if ! time ./rebar3 do get-deps, compile; then
+    echo "Retrying..."
+    export DEBUG=1
+    ./rebar3 do get-deps, compile
+fi
 
 echo -e "${bold}Done.${reset}"

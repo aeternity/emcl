@@ -8,14 +8,16 @@ SETLOCAL
 @call:log Set the paths appropriately
 
 :: Construct unix paths
-FOR /f %%i IN ('cygpath -a %~dp0..\..') DO SET "PROJECT_ROOT=%%i"
+FOR /f %%i IN ('%WIN_MSYS2_ROOT%\usr\bin\cygpath -a %~dp0..\..') DO SET "PROJECT_ROOT=%%i"
 :: remove trailing /
 SET "PROJECT_ROOT=%PROJECT_ROOT:~0,-1%"
 
-call "%~dp0vcvarsall" || exit /b %ERRORLEVEL%
+call "%~dp0vcvarsall"
+IF ERRORLEVEL 1 exit /b %ERRORLEVEL%
 
 @call:log Test
-"%WIN_MSYS2_ROOT%\usr\bin\bash.exe" -lc "${PROJECT_ROOT}/.circleci/windows/test.sh" || exit /b %ERRORLEVEL%
+"%WIN_MSYS2_ROOT%\usr\bin\bash.exe" -lc "${PROJECT_ROOT}/.circleci/windows/test.sh"
+IF ERRORLEVEL 1 exit /b %ERRORLEVEL%
 @call:log Test done.
 
 exit /b 0

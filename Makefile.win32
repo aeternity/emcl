@@ -4,7 +4,7 @@ mcl_obj_dir := c_src/mcl/obj
 mcl_lib_dir := c_src/mcl/lib
 cybozulib_ext_dir := c_src/cybozulib_ext
 
-CFLAGS := -MT -DNOMINMAX -Ox -DNDEBUG -openmp -W4 -Zi -EHsc -nologo -I$(mcl_dir)/include -I$(cybozulib_ext_dir)/include
+CFLAGS := -MT -DNOMINMAX -DMCL_DONT_USE_CSPRNG -Ox -DNDEBUG -openmp -W4 -Zi -EHsc -nologo -I$(mcl_dir)/include -I$(cybozulib_ext_dir)/include
 LDFLAGS := -LIBPATH:$(cybozulib_ext_dir)/lib -LIBPATH:$(mcl_lib_dir) -nologo
 
 .PHONY: win32_mcl

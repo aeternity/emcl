@@ -183,38 +183,38 @@ gt_test() ->
 %
 %  ok.
 %
-%hash_map_test() ->
-%  G1a = emcl:bnG1_hash_and_map_to(<<"this">>),
-%  G2a = emcl:bnG2_hash_and_map_to(<<"that">>),
-%
-%  G1b = emcl:bnFp_map_to_G1(emcl:bnFp_hash_of(<<"this">>)),
-%  G2b = emcl:bnFp2_map_to_G2(emcl:bnFp2_hash_of(<<"that">>)),
-%
-%  _ = emcl:bnFr_hash_of(<<"Test">>),
-%
-%  ?assertEqual(G1a, G1b),
-%  ?assertEqual(G2a, G2b),
-%
-%  ok.
+hash_map_test() ->
+  G1a = emcl:bnG1_hash_and_map_to(<<"this">>),
+  G2a = emcl:bnG2_hash_and_map_to(<<"that">>),
 
-%pairing_test() ->
-%  {ok, G1} = emcl:bnG1_hash_and_map_to(<<"abc">>),
-%  {ok, G2} = emcl:bnG2_hash_and_map_to(<<"def">>),
-%
-%  {ok, G1b} = emcl:bnG1_hash_and_map_to(<<"ABC">>),
-%  {ok, G2b} = emcl:bnG2_hash_and_map_to(<<"DEF">>),
-%
-%  E1 = emcl:bn_pairing(G1, G2),
-%  E2 = emcl:bn_final_exp(emcl:bn_miller_loop(G1, G2)),
-%
-%  ?assertEqual(E1, E2),
-%
-%  {ok, Ex} = emcl:bn_miller_loop_vec([G1, G1b], [G2, G2b]),
-%  Ey = emcl:bnGt_mul(emcl:bn_pairing(G1, G2), emcl:bn_pairing(G1b, G2b)),
-%
-%  ?assertEqual(Ex, Ey),
-%
-%  ok.
+  G1b = emcl:bnFp_map_to_G1(emcl:bnFp_hash_of(<<"this">>)),
+  G2b = emcl:bnFp2_map_to_G2(emcl:bnFp2_hash_of(<<"that">>)),
+
+  _ = emcl:bnFr_hash_of(<<"Test">>),
+
+  ?assertEqual(G1a, G1b),
+  ?assertEqual(G2a, G2b),
+
+  ok.
+
+pairing_test() ->
+  {ok, G1} = emcl:bnG1_hash_and_map_to(<<"abc">>),
+  {ok, G2} = emcl:bnG2_hash_and_map_to(<<"def">>),
+
+  {ok, G1b} = emcl:bnG1_hash_and_map_to(<<"ABC">>),
+  {ok, G2b} = emcl:bnG2_hash_and_map_to(<<"DEF">>),
+
+  E1 = emcl:bn_pairing(G1, G2),
+  E2 = emcl:bn_final_exp(emcl:bn_miller_loop(G1, G2)),
+
+  ?assertEqual(E1, E2),
+
+  {ok, Ex} = emcl:bn_miller_loop_vec([G1, G1b], [G2, G2b]),
+  Ey = emcl:bnGt_mul(emcl:bn_pairing(G1, G2), emcl:bn_pairing(G1b, G2b)),
+
+  ?assertEqual(Ex, Ey),
+
+  ok.
 
 %equal_test() ->
 %  Fr  = emcl:rnd_Fr(),
@@ -288,30 +288,30 @@ gt_test() ->
 %
 %  ok.
 
-%construct_test() ->
-%  I1 = 18590416872094568093245860,
-%  I2 = 832110056234918438930585923958,
-%  Fr = emcl:mk_Fr(I1),
-%  Fp = emcl:mk_Fp(I2),
-%
-%  ?assertEqual(I1, emcl:bnFr_to_int(Fr)),
-%  ?assertEqual(I2, emcl:bnFp_to_int(Fp)),
-%
-%  G1 = emcl:mk_G1(I1, I1, I1),
-%  G2 = emcl:mk_G2(I1, I2, I1, I2, I1, I2),
-%
-%  ?assertEqual({I1, I1, I1}, emcl:bnG1_to_int(G1)),
-%  ?assertEqual({{I1, I2}, {I1, I2}, {I1, I2}}, emcl:bnG2_to_int(G2)),
-%
-%  Gt = emcl:mk_Gt(I1, I2, I1, I2, I1, I2, I1, I2, I1, I2, I1, I2),
-%  ?assertEqual({I1, I2, I1, I2, I1, I2, I1, I2, I1, I2, I1, I2},
-%               emcl:bnGt_to_int(Gt)),
-%
-%  B1 = emcl:bnFp_to_bin(emcl:mk_Fp(I1)),
-%  B2 = emcl:bnFp_to_bin(emcl:mk_Fp(I2)),
-%
-%  ?assertEqual({B1, B1, B1}, emcl:bnG1_to_bin(G1)),
-%  ?assertEqual({{B1, B2}, {B1, B2}, {B1, B2}}, emcl:bnG2_to_bin(G2)),
-%  ?assertEqual({B1, B2, B1, B2, B1, B2, B1, B2, B1, B2, B1, B2}, emcl:bnGt_to_bin(Gt)),
-%
-%  ok.
+construct_test() ->
+  I1 = 18590416872094568093245860,
+  I2 = 832110056234918438930585923958,
+  Fr = emcl:mk_Fr(I1),
+  Fp = emcl:mk_Fp(I2),
+
+  ?assertEqual(I1, emcl:bnFr_to_int(Fr)),
+  ?assertEqual(I2, emcl:bnFp_to_int(Fp)),
+
+  G1 = emcl:mk_G1(I1, I1, I1),
+  G2 = emcl:mk_G2(I1, I2, I1, I2, I1, I2),
+
+  ?assertEqual({I1, I1, I1}, emcl:bnG1_to_int(G1)),
+  ?assertEqual({{I1, I2}, {I1, I2}, {I1, I2}}, emcl:bnG2_to_int(G2)),
+
+  Gt = emcl:mk_Gt(I1, I2, I1, I2, I1, I2, I1, I2, I1, I2, I1, I2),
+  ?assertEqual({I1, I2, I1, I2, I1, I2, I1, I2, I1, I2, I1, I2},
+               emcl:bnGt_to_int(Gt)),
+
+  B1 = emcl:bnFp_to_bin(emcl:mk_Fp(I1)),
+  B2 = emcl:bnFp_to_bin(emcl:mk_Fp(I2)),
+
+  ?assertEqual({B1, B1, B1}, emcl:bnG1_to_bin(G1)),
+  ?assertEqual({{B1, B2}, {B1, B2}, {B1, B2}}, emcl:bnG2_to_bin(G2)),
+  ?assertEqual({B1, B2, B1, B2, B1, B2, B1, B2, B1, B2, B1, B2}, emcl:bnGt_to_bin(Gt)),
+
+  ok.

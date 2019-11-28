@@ -1,4 +1,3 @@
-
 mcl_dir := c_src/mcl
 mcl_src_dir := c_src/mcl/src
 mcl_obj_dir := c_src/mcl/obj
@@ -9,7 +8,6 @@ CFLAGS := -MT -DNOMINMAX -Ox -DNDEBUG -openmp -W4 -Zi -EHsc -nologo -I$(mcl_dir)
 LDFLAGS := -LIBPATH:$(cybozulib_ext_dir)/lib -LIBPATH:$(mcl_lib_dir) -nologo
 
 .PHONY: win32_mcl
-.ONESHELL:
 win32_mcl: $(cybozulib_ext_dir) $(mcl_lib_dir)/mclbn384_256.lib
 
 $(mcl_lib_dir)/mclbn384_256.lib: $(mcl_lib_dir)/mcl.lib $(mcl_obj_dir)/bn_c384_256.obj

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Build project
+# Test project
 # $PROJECT_ROOT - project dir or run the scripts from project root
 
 set -e

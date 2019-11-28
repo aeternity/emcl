@@ -1,6 +1,6 @@
 #include "erl_nif.h"
-#include <string.h>
 #include <mcl/bn_c384_256.h>
+#include <string.h>
 
 static
 int enif_mcl_load(ErlNifEnv *env, void **priv_data, ERL_NIF_TERM load_info) {

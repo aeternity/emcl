@@ -18,37 +18,37 @@ enif_mcl_load(ErlNifEnv* env, void** priv_data, ERL_NIF_TERM load_info)
 #define FX_MODE 10
 #define GX_MODE 16
 
-#define CHECK_BINARY_ARG(X)                                                    \
-  if ((argc != 1) || (!enif_inspect_binary(env, argv[0], &X))) {               \
-    return enif_make_badarg(env);                                              \
+#define CHECK_BINARY_ARG(X)                                                              \
+  if ((argc != 1) || (!enif_inspect_binary(env, argv[0], &X))) {                         \
+    return enif_make_badarg(env);                                                        \
   }
 
-#define CHECK_BINARY_ARGS(X, Y)                                                \
-  if ((argc != 2) || (!enif_inspect_binary(env, argv[0], &X)) ||               \
-      (!enif_inspect_binary(env, argv[1], &Y))) {                              \
-    return enif_make_badarg(env);                                              \
+#define CHECK_BINARY_ARGS(X, Y)                                                          \
+  if ((argc != 2) || (!enif_inspect_binary(env, argv[0], &X)) ||                         \
+      (!enif_inspect_binary(env, argv[1], &Y))) {                                        \
+    return enif_make_badarg(env);                                                        \
   }
 
-#define MCL_BN_IS_X(TYPE, GET, IS_X)                                           \
-  TYPE a;                                                                      \
-                                                                               \
-  if (argc != 1 || !GET(env, argv[0], &a))                                     \
-    return enif_make_badarg(env);                                              \
-                                                                               \
-  if (IS_X(&a))                                                                \
-    return enif_make_atom(env, "true");                                        \
-  else                                                                         \
+#define MCL_BN_IS_X(TYPE, GET, IS_X)                                                     \
+  TYPE a;                                                                                \
+                                                                                         \
+  if (argc != 1 || !GET(env, argv[0], &a))                                               \
+    return enif_make_badarg(env);                                                        \
+                                                                                         \
+  if (IS_X(&a))                                                                          \
+    return enif_make_atom(env, "true");                                                  \
+  else                                                                                   \
     return enif_make_atom(env, "false");
 
-#define MCL_BN_IS_EQUAL(TYPE, GET, IS_EQUAL)                                   \
-  TYPE a, b;                                                                   \
-                                                                               \
-  if (argc != 2 || !GET(env, argv[0], &a) || !GET(env, argv[1], &b))           \
-    return enif_make_badarg(env);                                              \
-                                                                               \
-  if (IS_EQUAL(&a, &b))                                                        \
-    return enif_make_atom(env, "true");                                        \
-  else                                                                         \
+#define MCL_BN_IS_EQUAL(TYPE, GET, IS_EQUAL)                                             \
+  TYPE a, b;                                                                             \
+                                                                                         \
+  if (argc != 2 || !GET(env, argv[0], &a) || !GET(env, argv[1], &b))                     \
+    return enif_make_badarg(env);                                                        \
+                                                                                         \
+  if (IS_EQUAL(&a, &b))                                                                  \
+    return enif_make_atom(env, "true");                                                  \
+  else                                                                                   \
     return enif_make_atom(env, "false");
 
 static ERL_NIF_TERM
@@ -83,11 +83,7 @@ maybe_ok_tag(int ok, ErlNifEnv* env, ERL_NIF_TERM t)
 }
 
 static ERL_NIF_TERM
-enif_return_fx(int ok,
-               ErlNifEnv* env,
-               const char* x,
-               const char* tag,
-               unsigned int size)
+enif_return_fx(int ok, ErlNifEnv* env, const char* x, const char* tag, unsigned int size)
 {
   ErlNifBinary bin;
 
@@ -170,8 +166,7 @@ check_tag(ErlNifEnv* env, ERL_NIF_TERM atom, const char* tag, unsigned int sz)
 {
   char* buf;
   buf = (char*)calloc(sz + 1, sizeof(char));
-  if (!enif_get_atom(env, atom, buf, sz + 1, ERL_NIF_LATIN1) ||
-      strncmp(tag, buf, sz)) {
+  if (!enif_get_atom(env, atom, buf, sz + 1, ERL_NIF_LATIN1) || strncmp(tag, buf, sz)) {
     free(buf);
     return 0;
   }
@@ -188,8 +183,7 @@ get_fr(ErlNifEnv* env, ERL_NIF_TERM arg, mclBnFr* x)
   int tsize;
 
   if (!enif_get_tuple(env, arg, &tsize, &array) || tsize != 2 ||
-      !check_tag(env, array[0], "fr", 2) ||
-      !enif_inspect_binary(env, array[1], &bin)) {
+      !check_tag(env, array[0], "fr", 2) || !enif_inspect_binary(env, array[1], &bin)) {
     return 0;
   }
 
@@ -206,8 +200,7 @@ get_fp(ErlNifEnv* env, ERL_NIF_TERM arg, mclBnFp* x)
   int tsize;
 
   if (!enif_get_tuple(env, arg, &tsize, &array) || tsize != 2 ||
-      !check_tag(env, array[0], "fp", 2) ||
-      !enif_inspect_binary(env, array[1], &bin)) {
+      !check_tag(env, array[0], "fp", 2) || !enif_inspect_binary(env, array[1], &bin)) {
     return 0;
   }
 
@@ -303,22 +296,22 @@ binary_from_buf(ErlNifEnv* env, const char* buf)
 // -----
 // Fr arithmetic functions
 // -----
-#define MCL_BN_UNOP(TYPE, GET, OP, RETURN)                                     \
-  TYPE x, z;                                                                   \
-  if (!GET(env, argv[0], &x))                                                  \
-    return enif_make_badarg(env);                                              \
-                                                                               \
-  OP(&z, &x);                                                                  \
-                                                                               \
+#define MCL_BN_UNOP(TYPE, GET, OP, RETURN)                                               \
+  TYPE x, z;                                                                             \
+  if (!GET(env, argv[0], &x))                                                            \
+    return enif_make_badarg(env);                                                        \
+                                                                                         \
+  OP(&z, &x);                                                                            \
+                                                                                         \
   return RETURN(0, env, &z);
 
-#define MCL_BN_BINOP(TYPE, GET, OP, RETURN)                                    \
-  TYPE x, y, z;                                                                \
-  if (!GET(env, argv[0], &x) || !GET(env, argv[1], &y))                        \
-    return enif_make_badarg(env);                                              \
-                                                                               \
-  OP(&z, &x, &y);                                                              \
-                                                                               \
+#define MCL_BN_BINOP(TYPE, GET, OP, RETURN)                                              \
+  TYPE x, y, z;                                                                          \
+  if (!GET(env, argv[0], &x) || !GET(env, argv[1], &y))                                  \
+    return enif_make_badarg(env);                                                        \
+                                                                                         \
+  OP(&z, &x, &y);                                                                        \
+                                                                                         \
   return RETURN(0, env, &z);
 
 #define MCL_BN_FR_UNOP(OP) MCL_BN_UNOP(mclBnFr, get_fr, OP, enif_return_fr)
@@ -419,9 +412,7 @@ enif_mcl_bn_fr_is_negative(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_fr_lagrange_interpolation(ErlNifEnv* env,
-                                      int argc,
-                                      ERL_NIF_TERM const argv[])
+enif_mcl_bn_fr_lagrange_interpolation(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
 {
   // We have ensured on the Erlang side that these are non-empty lists of
   // equal length.
@@ -476,9 +467,7 @@ enif_mcl_bn_fr_lagrange_interpolation(ErlNifEnv* env,
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_fr_eval_polynomial(ErlNifEnv* env,
-                               int argc,
-                               ERL_NIF_TERM const argv[])
+enif_mcl_bn_fr_eval_polynomial(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
 {
   mclBnFr x;
 
@@ -626,8 +615,7 @@ enif_mcl_bn_fp_is_negative(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
 // Fp2 arithmetic functions
 // -----
 #define MCL_BN_FP2_UNOP(OP) MCL_BN_UNOP(mclBnFp2, get_fp2, OP, enif_return_fp2)
-#define MCL_BN_FP2_BINOP(OP)                                                   \
-  MCL_BN_BINOP(mclBnFp2, get_fp2, OP, enif_return_fp2)
+#define MCL_BN_FP2_BINOP(OP) MCL_BN_BINOP(mclBnFp2, get_fp2, OP, enif_return_fp2)
 
 static ERL_NIF_TERM
 enif_mcl_bn_fp2_neg(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
@@ -800,9 +788,7 @@ enif_mcl_bn_g1_mul_vec(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_g1_hash_and_map_to(ErlNifEnv* env,
-                               int argc,
-                               ERL_NIF_TERM const argv[])
+enif_mcl_bn_g1_hash_and_map_to(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
 {
   ErlNifBinary in;
   mclBnG1 res;
@@ -835,17 +821,13 @@ enif_mcl_bn_g1_is_valid(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_g1_is_valid_order(ErlNifEnv* env,
-                              int argc,
-                              ERL_NIF_TERM const argv[])
+enif_mcl_bn_g1_is_valid_order(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
 {
   MCL_BN_IS_X(mclBnG1, get_g1, mclBnG1_isValidOrder)
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_g1_lagrange_interpolation(ErlNifEnv* env,
-                                      int argc,
-                                      ERL_NIF_TERM const argv[])
+enif_mcl_bn_g1_lagrange_interpolation(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
 {
   // We have ensured on the Erlang side that these are non-empty lists of
   // equal length.
@@ -899,9 +881,7 @@ enif_mcl_bn_g1_lagrange_interpolation(ErlNifEnv* env,
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_g1_eval_polynomial(ErlNifEnv* env,
-                               int argc,
-                               ERL_NIF_TERM const argv[])
+enif_mcl_bn_g1_eval_polynomial(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
 {
   mclBnFr x;
 
@@ -1039,9 +1019,7 @@ enif_mcl_bn_g2_mul_vec(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_g2_hash_and_map_to(ErlNifEnv* env,
-                               int argc,
-                               ERL_NIF_TERM const argv[])
+enif_mcl_bn_g2_hash_and_map_to(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
 {
   ErlNifBinary in;
   mclBnG2 res;
@@ -1074,17 +1052,13 @@ enif_mcl_bn_g2_is_valid(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_g2_is_valid_order(ErlNifEnv* env,
-                              int argc,
-                              ERL_NIF_TERM const argv[])
+enif_mcl_bn_g2_is_valid_order(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
 {
   MCL_BN_IS_X(mclBnG2, get_g2, mclBnG2_isValidOrder)
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_g2_lagrange_interpolation(ErlNifEnv* env,
-                                      int argc,
-                                      ERL_NIF_TERM const argv[])
+enif_mcl_bn_g2_lagrange_interpolation(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
 {
   // We have ensured on the Erlang side that these are non-empty lists of
   // equal length.
@@ -1137,9 +1111,7 @@ enif_mcl_bn_g2_lagrange_interpolation(ErlNifEnv* env,
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_g2_eval_polynomial(ErlNifEnv* env,
-                               int argc,
-                               ERL_NIF_TERM const argv[])
+enif_mcl_bn_g2_eval_polynomial(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
 {
   mclBnFr x;
 
@@ -1484,18 +1456,18 @@ enif_mcl_bn_fp2_map_to_g2(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
 // -----
 // To "string"
 // -----
-#define MCL_BN_TO_STR(TYPE, SIZE, GET, FUN, MODE)                              \
-  TYPE x;                                                                      \
-  char buf[SIZE];                                                              \
-                                                                               \
-  if (argc != 1 || !GET(env, argv[0], &x)) {                                   \
-    return enif_make_badarg(env);                                              \
-  }                                                                            \
-                                                                               \
-  if (!FUN(buf, SIZE, &x, MODE)) {                                             \
-    return error_tuple(env, "bad_value");                                      \
-  }                                                                            \
-                                                                               \
+#define MCL_BN_TO_STR(TYPE, SIZE, GET, FUN, MODE)                                        \
+  TYPE x;                                                                                \
+  char buf[SIZE];                                                                        \
+                                                                                         \
+  if (argc != 1 || !GET(env, argv[0], &x)) {                                             \
+    return enif_make_badarg(env);                                                        \
+  }                                                                                      \
+                                                                                         \
+  if (!FUN(buf, SIZE, &x, MODE)) {                                                       \
+    return error_tuple(env, "bad_value");                                                \
+  }                                                                                      \
+                                                                                         \
   return binary_from_buf(env, buf);
 
 static ERL_NIF_TERM
@@ -1531,15 +1503,15 @@ enif_mcl_bn_gt_to_str(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
 // -----
 // From "string"
 // -----
-#define MCL_BN_FROM_STR(TYPE, FUN, MODE, RETURN)                               \
-  ErlNifBinary in;                                                             \
-  TYPE x;                                                                      \
-                                                                               \
-  CHECK_BINARY_ARG(in);                                                        \
-                                                                               \
-  if (FUN(&x, (const char*)in.data, in.size, MODE))                            \
-    return error_tuple(env, "bad_string");                                     \
-                                                                               \
+#define MCL_BN_FROM_STR(TYPE, FUN, MODE, RETURN)                                         \
+  ErlNifBinary in;                                                                       \
+  TYPE x;                                                                                \
+                                                                                         \
+  CHECK_BINARY_ARG(in);                                                                  \
+                                                                                         \
+  if (FUN(&x, (const char*)in.data, in.size, MODE))                                      \
+    return error_tuple(env, "bad_string");                                               \
+                                                                                         \
   return RETURN(1, env, &x);
 
 static ERL_NIF_TERM
@@ -1575,16 +1547,16 @@ enif_mcl_bn_gt_from_str(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
 // -----
 // Compression
 // -----
-#define MCL_BN_COMPRESS(TYPE, SIZE, GET, FUN)                                  \
-  TYPE x;                                                                      \
-  char buf[SIZE];                                                              \
-                                                                               \
-  if (!GET(env, argv[0], &x))                                                  \
-    return enif_make_badarg(env);                                              \
-                                                                               \
-  if (!FUN(buf, SIZE, &x))                                                     \
-    return error_tuple(env, "compression_failed");                             \
-                                                                               \
+#define MCL_BN_COMPRESS(TYPE, SIZE, GET, FUN)                                            \
+  TYPE x;                                                                                \
+  char buf[SIZE];                                                                        \
+                                                                                         \
+  if (!GET(env, argv[0], &x))                                                            \
+    return enif_make_badarg(env);                                                        \
+                                                                                         \
+  if (!FUN(buf, SIZE, &x))                                                               \
+    return error_tuple(env, "compression_failed");                                       \
+                                                                                         \
   return binary_from_buf_len(env, buf, SIZE);
 
 static ERL_NIF_TERM
@@ -1626,15 +1598,15 @@ enif_mcl_bn_gt_compress(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
 // -----
 // Decompression
 // -----
-#define MCL_BN_DECOMPRESS(TYPE, FUN, RETURN)                                   \
-  ErlNifBinary bin;                                                            \
-  TYPE x;                                                                      \
-                                                                               \
-  CHECK_BINARY_ARG(bin);                                                       \
-                                                                               \
-  if (!FUN(&x, bin.data, bin.size))                                            \
-    return error_tuple(env, "decompression_failed");                           \
-                                                                               \
+#define MCL_BN_DECOMPRESS(TYPE, FUN, RETURN)                                             \
+  ErlNifBinary bin;                                                                      \
+  TYPE x;                                                                                \
+                                                                                         \
+  CHECK_BINARY_ARG(bin);                                                                 \
+                                                                                         \
+  if (!FUN(&x, bin.data, bin.size))                                                      \
+    return error_tuple(env, "decompression_failed");                                     \
+                                                                                         \
   return RETURN(1, env, &x);
 
 static ERL_NIF_TERM
@@ -1694,9 +1666,7 @@ static ErlNifFunc nif_funcs[] = {
   { "mcl_bn_fr_is_odd", 1, enif_mcl_bn_fr_is_odd },
   { "mcl_bn_fr_is_valid", 1, enif_mcl_bn_fr_is_valid },
   { "mcl_bn_fr_is_negative", 1, enif_mcl_bn_fr_is_negative },
-  { "mcl_bn_fr_lagrange_interpolation",
-    2,
-    enif_mcl_bn_fr_lagrange_interpolation },
+  { "mcl_bn_fr_lagrange_interpolation", 2, enif_mcl_bn_fr_lagrange_interpolation },
   { "mcl_bn_fr_eval_polynomial", 2, enif_mcl_bn_fr_eval_polynomial },
 
   { "mcl_bn_fp_neg", 1, enif_mcl_bn_fp_neg },
@@ -1738,9 +1708,7 @@ static ErlNifFunc nif_funcs[] = {
   { "mcl_bn_g1_is_zero", 1, enif_mcl_bn_g1_is_zero },
   { "mcl_bn_g1_is_valid", 1, enif_mcl_bn_g1_is_valid },
   { "mcl_bn_g1_is_valid_order", 1, enif_mcl_bn_g1_is_valid_order },
-  { "mcl_bn_g1_lagrange_interpolation",
-    2,
-    enif_mcl_bn_g1_lagrange_interpolation },
+  { "mcl_bn_g1_lagrange_interpolation", 2, enif_mcl_bn_g1_lagrange_interpolation },
   { "mcl_bn_g1_eval_polynomial", 2, enif_mcl_bn_g1_eval_polynomial },
 
   { "mcl_bn_g2_neg", 1, enif_mcl_bn_g2_neg },
@@ -1755,9 +1723,7 @@ static ErlNifFunc nif_funcs[] = {
   { "mcl_bn_g2_is_zero", 1, enif_mcl_bn_g2_is_zero },
   { "mcl_bn_g2_is_valid", 1, enif_mcl_bn_g2_is_valid },
   { "mcl_bn_g2_is_valid_order", 1, enif_mcl_bn_g2_is_valid_order },
-  { "mcl_bn_g2_lagrange_interpolation",
-    2,
-    enif_mcl_bn_g2_lagrange_interpolation },
+  { "mcl_bn_g2_lagrange_interpolation", 2, enif_mcl_bn_g2_lagrange_interpolation },
   { "mcl_bn_g2_eval_polynomial", 2, enif_mcl_bn_g2_eval_polynomial },
 
   { "mcl_bn_gt_neg", 1, enif_mcl_bn_gt_neg },

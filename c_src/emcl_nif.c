@@ -3,7 +3,7 @@
 #include <string.h>
 
 static int
-enif_mcl_load(ErlNifEnv* env, void** priv_data, ERL_NIF_TERM load_info)
+enif_mcl_load(ErlNifEnv *env, void **priv_data, ERL_NIF_TERM load_info)
 {
   return mclBn_init(MCL_BLS12_381, MCLBN_COMPILED_TIME_VAR);
 }
@@ -52,7 +52,7 @@ enif_mcl_load(ErlNifEnv* env, void** priv_data, ERL_NIF_TERM load_info)
     return enif_make_atom(env, "false");
 
 static ERL_NIF_TERM
-mk_atom(ErlNifEnv* env, const char* str)
+mk_atom(ErlNifEnv *env, const char *str)
 {
   ERL_NIF_TERM atom;
   if (!enif_make_existing_atom(env, str, &atom, ERL_NIF_LATIN1)) {
@@ -62,19 +62,19 @@ mk_atom(ErlNifEnv* env, const char* str)
 }
 
 static ERL_NIF_TERM
-error_tuple(ErlNifEnv* env, char* error_atom)
+error_tuple(ErlNifEnv *env, char *error_atom)
 {
   return enif_make_tuple2(env, mk_atom(env, "error"), mk_atom(env, error_atom));
 }
 
 static ERL_NIF_TERM
-ok_tuple(ErlNifEnv* env, ERL_NIF_TERM t)
+ok_tuple(ErlNifEnv *env, ERL_NIF_TERM t)
 {
   return enif_make_tuple2(env, mk_atom(env, "ok"), t);
 }
 
 static ERL_NIF_TERM
-maybe_ok_tag(int ok, ErlNifEnv* env, ERL_NIF_TERM t)
+maybe_ok_tag(int ok, ErlNifEnv *env, ERL_NIF_TERM t)
 {
   if (ok) {
     return ok_tuple(env, t);
@@ -83,7 +83,7 @@ maybe_ok_tag(int ok, ErlNifEnv* env, ERL_NIF_TERM t)
 }
 
 static ERL_NIF_TERM
-enif_return_fx(int ok, ErlNifEnv* env, const char* x, const char* tag, unsigned int size)
+enif_return_fx(int ok, ErlNifEnv *env, const char *x, const char *tag, unsigned int size)
 {
   ErlNifBinary bin;
 
@@ -100,19 +100,19 @@ enif_return_fx(int ok, ErlNifEnv* env, const char* x, const char* tag, unsigned 
 }
 
 static ERL_NIF_TERM
-enif_return_fr(int ok, ErlNifEnv* env, const mclBnFr* x)
+enif_return_fr(int ok, ErlNifEnv *env, const mclBnFr *x)
 {
-  return enif_return_fx(ok, env, (const char*)x->d, "fr", FR_SIZE);
+  return enif_return_fx(ok, env, (const char *)x->d, "fr", FR_SIZE);
 }
 
 static ERL_NIF_TERM
-enif_return_fp(int ok, ErlNifEnv* env, const mclBnFp* x)
+enif_return_fp(int ok, ErlNifEnv *env, const mclBnFp *x)
 {
-  return enif_return_fx(ok, env, (const char*)x->d, "fp", FP_SIZE);
+  return enif_return_fx(ok, env, (const char *)x->d, "fp", FP_SIZE);
 }
 
 static ERL_NIF_TERM
-enif_return_fp2(int ok, ErlNifEnv* env, const mclBnFp2* x)
+enif_return_fp2(int ok, ErlNifEnv *env, const mclBnFp2 *x)
 {
   ERL_NIF_TERM res = enif_make_tuple3(env,
                                       mk_atom(env, "fp2"),
@@ -123,7 +123,7 @@ enif_return_fp2(int ok, ErlNifEnv* env, const mclBnFp2* x)
 }
 
 static ERL_NIF_TERM
-enif_return_g1(int ok, ErlNifEnv* env, const mclBnG1* x)
+enif_return_g1(int ok, ErlNifEnv *env, const mclBnG1 *x)
 {
   ERL_NIF_TERM res = enif_make_tuple4(env,
                                       mk_atom(env, "g1"),
@@ -135,7 +135,7 @@ enif_return_g1(int ok, ErlNifEnv* env, const mclBnG1* x)
 }
 
 static ERL_NIF_TERM
-enif_return_g2(int ok, ErlNifEnv* env, const mclBnG2* x)
+enif_return_g2(int ok, ErlNifEnv *env, const mclBnG2 *x)
 {
   ERL_NIF_TERM res = enif_make_tuple4(env,
                                       mk_atom(env, "g2"),
@@ -147,7 +147,7 @@ enif_return_g2(int ok, ErlNifEnv* env, const mclBnG2* x)
 }
 
 static ERL_NIF_TERM
-enif_return_gt(int ok, ErlNifEnv* env, const mclBnGT* x)
+enif_return_gt(int ok, ErlNifEnv *env, const mclBnGT *x)
 {
   ERL_NIF_TERM arr[13];
 
@@ -162,10 +162,10 @@ enif_return_gt(int ok, ErlNifEnv* env, const mclBnGT* x)
 }
 
 static int
-check_tag(ErlNifEnv* env, ERL_NIF_TERM atom, const char* tag, unsigned int sz)
+check_tag(ErlNifEnv *env, ERL_NIF_TERM atom, const char *tag, unsigned int sz)
 {
-  char* buf;
-  buf = (char*)calloc(sz + 1, sizeof(char));
+  char *buf;
+  buf = (char *)calloc(sz + 1, sizeof(char));
   if (!enif_get_atom(env, atom, buf, sz + 1, ERL_NIF_LATIN1) || strncmp(tag, buf, sz)) {
     free(buf);
     return 0;
@@ -176,9 +176,9 @@ check_tag(ErlNifEnv* env, ERL_NIF_TERM atom, const char* tag, unsigned int sz)
 }
 
 static int
-get_fr(ErlNifEnv* env, ERL_NIF_TERM arg, mclBnFr* x)
+get_fr(ErlNifEnv *env, ERL_NIF_TERM arg, mclBnFr *x)
 {
-  const ERL_NIF_TERM* array;
+  const ERL_NIF_TERM *array;
   ErlNifBinary bin;
   int tsize;
 
@@ -193,9 +193,9 @@ get_fr(ErlNifEnv* env, ERL_NIF_TERM arg, mclBnFr* x)
 }
 
 static int
-get_fp(ErlNifEnv* env, ERL_NIF_TERM arg, mclBnFp* x)
+get_fp(ErlNifEnv *env, ERL_NIF_TERM arg, mclBnFp *x)
 {
-  const ERL_NIF_TERM* array;
+  const ERL_NIF_TERM *array;
   ErlNifBinary bin;
   int tsize;
 
@@ -210,9 +210,9 @@ get_fp(ErlNifEnv* env, ERL_NIF_TERM arg, mclBnFp* x)
 }
 
 static int
-get_fp2(ErlNifEnv* env, ERL_NIF_TERM arg, mclBnFp2* x)
+get_fp2(ErlNifEnv *env, ERL_NIF_TERM arg, mclBnFp2 *x)
 {
-  const ERL_NIF_TERM* array;
+  const ERL_NIF_TERM *array;
   int tsize;
 
   if (!enif_get_tuple(env, arg, &tsize, &array) || tsize != 3 ||
@@ -225,9 +225,9 @@ get_fp2(ErlNifEnv* env, ERL_NIF_TERM arg, mclBnFp2* x)
 }
 
 static int
-get_g1(ErlNifEnv* env, ERL_NIF_TERM arg, mclBnG1* x)
+get_g1(ErlNifEnv *env, ERL_NIF_TERM arg, mclBnG1 *x)
 {
-  const ERL_NIF_TERM* array;
+  const ERL_NIF_TERM *array;
   int tsize;
 
   if (!enif_get_tuple(env, arg, &tsize, &array) || tsize != 4 ||
@@ -240,9 +240,9 @@ get_g1(ErlNifEnv* env, ERL_NIF_TERM arg, mclBnG1* x)
 }
 
 static int
-get_g2(ErlNifEnv* env, ERL_NIF_TERM arg, mclBnG2* x)
+get_g2(ErlNifEnv *env, ERL_NIF_TERM arg, mclBnG2 *x)
 {
-  const ERL_NIF_TERM* array;
+  const ERL_NIF_TERM *array;
   int tsize;
 
   if (!enif_get_tuple(env, arg, &tsize, &array) || tsize != 4 ||
@@ -255,9 +255,9 @@ get_g2(ErlNifEnv* env, ERL_NIF_TERM arg, mclBnG2* x)
 }
 
 static int
-get_gt(ErlNifEnv* env, ERL_NIF_TERM arg, mclBnGT* x)
+get_gt(ErlNifEnv *env, ERL_NIF_TERM arg, mclBnGT *x)
 {
-  const ERL_NIF_TERM* array;
+  const ERL_NIF_TERM *array;
   int tsize;
   if (!enif_get_tuple(env, arg, &tsize, &array) || tsize != 13 ||
       !check_tag(env, array[0], "gt", 2)) {
@@ -274,7 +274,7 @@ get_gt(ErlNifEnv* env, ERL_NIF_TERM arg, mclBnGT* x)
 }
 
 static ERL_NIF_TERM
-binary_from_buf_len(ErlNifEnv* env, const char* buf, int len)
+binary_from_buf_len(ErlNifEnv *env, const char *buf, int len)
 {
   ErlNifBinary bin;
 
@@ -288,7 +288,7 @@ binary_from_buf_len(ErlNifEnv* env, const char* buf, int len)
 }
 
 static ERL_NIF_TERM
-binary_from_buf(ErlNifEnv* env, const char* buf)
+binary_from_buf(ErlNifEnv *env, const char *buf)
 {
   return binary_from_buf_len(env, buf, strlen(buf));
 }
@@ -318,25 +318,25 @@ binary_from_buf(ErlNifEnv* env, const char* buf)
 #define MCL_BN_FR_BINOP(OP) MCL_BN_BINOP(mclBnFr, get_fr, OP, enif_return_fr)
 
 static ERL_NIF_TERM
-enif_mcl_bn_fr_neg(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_fr_neg(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   MCL_BN_FR_UNOP(mclBnFr_neg)
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_fr_inv(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_fr_inv(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   MCL_BN_FR_UNOP(mclBnFr_inv)
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_fr_sqr(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_fr_sqr(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   MCL_BN_FR_UNOP(mclBnFr_sqr)
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_fr_sqrt(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_fr_sqrt(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   mclBnFr x;
   mclBnFr z;
@@ -352,67 +352,67 @@ enif_mcl_bn_fr_sqrt(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_fr_add(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_fr_add(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   MCL_BN_FR_BINOP(mclBnFr_add)
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_fr_sub(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_fr_sub(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   MCL_BN_FR_BINOP(mclBnFr_sub)
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_fr_mul(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_fr_mul(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   MCL_BN_FR_BINOP(mclBnFr_mul)
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_fr_div(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_fr_div(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   MCL_BN_FR_BINOP(mclBnFr_div)
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_fr_is_equal(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_fr_is_equal(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   MCL_BN_IS_EQUAL(mclBnFr, get_fr, mclBnFr_isEqual)
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_fr_is_zero(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_fr_is_zero(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   MCL_BN_IS_X(mclBnFr, get_fr, mclBnFr_isZero)
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_fr_is_one(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_fr_is_one(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   MCL_BN_IS_X(mclBnFr, get_fr, mclBnFr_isOne)
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_fr_is_odd(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_fr_is_odd(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   MCL_BN_IS_X(mclBnFr, get_fr, mclBnFr_isOdd)
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_fr_is_valid(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_fr_is_valid(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   MCL_BN_IS_X(mclBnFr, get_fr, mclBnFr_isValid)
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_fr_is_negative(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_fr_is_negative(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   MCL_BN_IS_X(mclBnFr, get_fr, mclBnFr_isNegative)
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_fr_lagrange_interpolation(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_fr_lagrange_interpolation(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   // We have ensured on the Erlang side that these are non-empty lists of
   // equal length.
@@ -426,11 +426,11 @@ enif_mcl_bn_fr_lagrange_interpolation(ErlNifEnv* env, int argc, ERL_NIF_TERM con
     return enif_make_badarg(env);
   }
 
-  mclBnFr* xs;
-  mclBnFr* ys;
+  mclBnFr *xs;
+  mclBnFr *ys;
   mclBnFr res;
-  xs = (mclBnFr*)calloc(k, sizeof(mclBnFr));
-  ys = (mclBnFr*)calloc(k, sizeof(mclBnFr));
+  xs = (mclBnFr *)calloc(k, sizeof(mclBnFr));
+  ys = (mclBnFr *)calloc(k, sizeof(mclBnFr));
 
   ERL_NIF_TERM exs = argv[0];
   ERL_NIF_TERM ex;
@@ -467,7 +467,7 @@ enif_mcl_bn_fr_lagrange_interpolation(ErlNifEnv* env, int argc, ERL_NIF_TERM con
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_fr_eval_polynomial(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_fr_eval_polynomial(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   mclBnFr x;
 
@@ -483,9 +483,9 @@ enif_mcl_bn_fr_eval_polynomial(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv
     return enif_make_badarg(env);
   }
 
-  mclBnFr* cs;
+  mclBnFr *cs;
   mclBnFr res;
-  cs = (mclBnFr*)calloc(k, sizeof(mclBnFr));
+  cs = (mclBnFr *)calloc(k, sizeof(mclBnFr));
 
   ERL_NIF_TERM ecs = argv[0];
   ERL_NIF_TERM ec;
@@ -518,25 +518,25 @@ enif_mcl_bn_fr_eval_polynomial(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv
 #define MCL_BN_FP_BINOP(OP) MCL_BN_BINOP(mclBnFp, get_fp, OP, enif_return_fp)
 
 static ERL_NIF_TERM
-enif_mcl_bn_fp_neg(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_fp_neg(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   MCL_BN_FP_UNOP(mclBnFp_neg)
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_fp_inv(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_fp_inv(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   MCL_BN_FP_UNOP(mclBnFp_inv)
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_fp_sqr(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_fp_sqr(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   MCL_BN_FP_UNOP(mclBnFp_sqr)
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_fp_sqrt(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_fp_sqrt(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   mclBnFp x;
   mclBnFp z;
@@ -552,61 +552,61 @@ enif_mcl_bn_fp_sqrt(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_fp_add(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_fp_add(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   MCL_BN_FP_BINOP(mclBnFp_add)
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_fp_sub(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_fp_sub(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   MCL_BN_FP_BINOP(mclBnFp_sub)
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_fp_mul(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_fp_mul(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   MCL_BN_FP_BINOP(mclBnFp_mul)
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_fp_div(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_fp_div(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   MCL_BN_FP_BINOP(mclBnFp_div)
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_fp_is_equal(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_fp_is_equal(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   MCL_BN_IS_EQUAL(mclBnFp, get_fp, mclBnFp_isEqual)
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_fp_is_zero(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_fp_is_zero(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   MCL_BN_IS_X(mclBnFp, get_fp, mclBnFp_isZero)
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_fp_is_one(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_fp_is_one(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   MCL_BN_IS_X(mclBnFp, get_fp, mclBnFp_isOne)
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_fp_is_odd(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_fp_is_odd(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   MCL_BN_IS_X(mclBnFp, get_fp, mclBnFp_isOdd)
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_fp_is_valid(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_fp_is_valid(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   MCL_BN_IS_X(mclBnFp, get_fp, mclBnFp_isValid)
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_fp_is_negative(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_fp_is_negative(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   MCL_BN_IS_X(mclBnFp, get_fp, mclBnFp_isNegative)
 }
@@ -618,25 +618,25 @@ enif_mcl_bn_fp_is_negative(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
 #define MCL_BN_FP2_BINOP(OP) MCL_BN_BINOP(mclBnFp2, get_fp2, OP, enif_return_fp2)
 
 static ERL_NIF_TERM
-enif_mcl_bn_fp2_neg(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_fp2_neg(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   MCL_BN_FP2_UNOP(mclBnFp2_neg)
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_fp2_inv(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_fp2_inv(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   MCL_BN_FP2_UNOP(mclBnFp2_inv)
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_fp2_sqr(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_fp2_sqr(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   MCL_BN_FP2_UNOP(mclBnFp2_sqr)
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_fp2_sqrt(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_fp2_sqrt(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   mclBnFp2 x;
   mclBnFp2 z;
@@ -652,43 +652,43 @@ enif_mcl_bn_fp2_sqrt(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_fp2_add(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_fp2_add(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   MCL_BN_FP2_BINOP(mclBnFp2_add)
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_fp2_sub(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_fp2_sub(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   MCL_BN_FP2_BINOP(mclBnFp2_sub)
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_fp2_mul(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_fp2_mul(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   MCL_BN_FP2_BINOP(mclBnFp2_mul)
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_fp2_div(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_fp2_div(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   MCL_BN_FP2_BINOP(mclBnFp2_div)
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_fp2_is_equal(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_fp2_is_equal(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   MCL_BN_IS_EQUAL(mclBnFp2, get_fp2, mclBnFp2_isEqual)
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_fp2_is_zero(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_fp2_is_zero(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   MCL_BN_IS_X(mclBnFp2, get_fp2, mclBnFp2_isZero)
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_fp2_is_one(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_fp2_is_one(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   MCL_BN_IS_X(mclBnFp2, get_fp2, mclBnFp2_isOne)
 }
@@ -700,37 +700,37 @@ enif_mcl_bn_fp2_is_one(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
 #define MCL_BN_G1_BINOP(OP) MCL_BN_BINOP(mclBnG1, get_g1, OP, enif_return_g1)
 
 static ERL_NIF_TERM
-enif_mcl_bn_g1_neg(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_g1_neg(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   MCL_BN_G1_UNOP(mclBnG1_neg)
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_g1_dbl(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_g1_dbl(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   MCL_BN_G1_UNOP(mclBnG1_dbl)
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_g1_normalize(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_g1_normalize(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   MCL_BN_G1_UNOP(mclBnG1_normalize)
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_g1_add(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_g1_add(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   MCL_BN_G1_BINOP(mclBnG1_add)
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_g1_sub(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_g1_sub(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   MCL_BN_G1_BINOP(mclBnG1_sub)
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_g1_mul(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_g1_mul(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   mclBnFr b;
   mclBnG1 a;
@@ -746,7 +746,7 @@ enif_mcl_bn_g1_mul(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_g1_mul_vec(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_g1_mul_vec(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   ERL_NIF_TERM g1s;
   ERL_NIF_TERM g1;
@@ -788,7 +788,7 @@ enif_mcl_bn_g1_mul_vec(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_g1_hash_and_map_to(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_g1_hash_and_map_to(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   ErlNifBinary in;
   mclBnG1 res;
@@ -803,31 +803,31 @@ enif_mcl_bn_g1_hash_and_map_to(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_g1_is_equal(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_g1_is_equal(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   MCL_BN_IS_EQUAL(mclBnG1, get_g1, mclBnG1_isEqual)
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_g1_is_zero(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_g1_is_zero(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   MCL_BN_IS_X(mclBnG1, get_g1, mclBnG1_isZero)
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_g1_is_valid(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_g1_is_valid(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   MCL_BN_IS_X(mclBnG1, get_g1, mclBnG1_isValid)
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_g1_is_valid_order(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_g1_is_valid_order(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   MCL_BN_IS_X(mclBnG1, get_g1, mclBnG1_isValidOrder)
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_g1_lagrange_interpolation(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_g1_lagrange_interpolation(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   // We have ensured on the Erlang side that these are non-empty lists of
   // equal length.
@@ -841,12 +841,12 @@ enif_mcl_bn_g1_lagrange_interpolation(ErlNifEnv* env, int argc, ERL_NIF_TERM con
     return enif_make_badarg(env);
   }
 
-  mclBnFr* xs;
-  xs = (mclBnFr*)calloc(k, sizeof(mclBnFr));
+  mclBnFr *xs;
+  xs = (mclBnFr *)calloc(k, sizeof(mclBnFr));
 
-  mclBnG1* ys;
+  mclBnG1 *ys;
   mclBnG1 res;
-  ys = (mclBnG1*)calloc(k, sizeof(mclBnG1));
+  ys = (mclBnG1 *)calloc(k, sizeof(mclBnG1));
   ERL_NIF_TERM exs = argv[0];
   ERL_NIF_TERM ex;
   ERL_NIF_TERM eys = argv[1];
@@ -881,7 +881,7 @@ enif_mcl_bn_g1_lagrange_interpolation(ErlNifEnv* env, int argc, ERL_NIF_TERM con
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_g1_eval_polynomial(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_g1_eval_polynomial(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   mclBnFr x;
 
@@ -897,9 +897,9 @@ enif_mcl_bn_g1_eval_polynomial(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv
     return enif_make_badarg(env);
   }
 
-  mclBnG1* cs;
+  mclBnG1 *cs;
   mclBnG1 res;
-  cs = (mclBnG1*)calloc(k, sizeof(mclBnG1));
+  cs = (mclBnG1 *)calloc(k, sizeof(mclBnG1));
   ERL_NIF_TERM ecs = argv[0];
   ERL_NIF_TERM ec;
 
@@ -931,37 +931,37 @@ enif_mcl_bn_g1_eval_polynomial(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv
 #define MCL_BN_G2_BINOP(OP) MCL_BN_BINOP(mclBnG2, get_g2, OP, enif_return_g2)
 
 static ERL_NIF_TERM
-enif_mcl_bn_g2_neg(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_g2_neg(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   MCL_BN_G2_UNOP(mclBnG2_neg)
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_g2_dbl(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_g2_dbl(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   MCL_BN_G2_UNOP(mclBnG2_dbl)
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_g2_normalize(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_g2_normalize(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   MCL_BN_G2_UNOP(mclBnG2_normalize)
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_g2_add(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_g2_add(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   MCL_BN_G2_BINOP(mclBnG2_add)
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_g2_sub(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_g2_sub(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   MCL_BN_G2_BINOP(mclBnG2_sub)
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_g2_mul(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_g2_mul(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   mclBnFr b;
   mclBnG2 a;
@@ -977,7 +977,7 @@ enif_mcl_bn_g2_mul(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_g2_mul_vec(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_g2_mul_vec(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   ERL_NIF_TERM g2s;
   ERL_NIF_TERM g2;
@@ -1019,7 +1019,7 @@ enif_mcl_bn_g2_mul_vec(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_g2_hash_and_map_to(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_g2_hash_and_map_to(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   ErlNifBinary in;
   mclBnG2 res;
@@ -1034,31 +1034,31 @@ enif_mcl_bn_g2_hash_and_map_to(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_g2_is_equal(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_g2_is_equal(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   MCL_BN_IS_EQUAL(mclBnG2, get_g2, mclBnG2_isEqual)
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_g2_is_zero(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_g2_is_zero(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   MCL_BN_IS_X(mclBnG2, get_g2, mclBnG2_isZero)
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_g2_is_valid(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_g2_is_valid(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   MCL_BN_IS_X(mclBnG2, get_g2, mclBnG2_isValid)
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_g2_is_valid_order(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_g2_is_valid_order(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   MCL_BN_IS_X(mclBnG2, get_g2, mclBnG2_isValidOrder)
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_g2_lagrange_interpolation(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_g2_lagrange_interpolation(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   // We have ensured on the Erlang side that these are non-empty lists of
   // equal length.
@@ -1072,11 +1072,11 @@ enif_mcl_bn_g2_lagrange_interpolation(ErlNifEnv* env, int argc, ERL_NIF_TERM con
     return enif_make_badarg(env);
   }
 
-  mclBnFr* xs;
-  xs = (mclBnFr*)calloc(k, sizeof(mclBnFr));
-  mclBnG2* ys;
+  mclBnFr *xs;
+  xs = (mclBnFr *)calloc(k, sizeof(mclBnFr));
+  mclBnG2 *ys;
   mclBnG2 res;
-  ys = (mclBnG2*)calloc(k, sizeof(mclBnG2));
+  ys = (mclBnG2 *)calloc(k, sizeof(mclBnG2));
   ERL_NIF_TERM exs = argv[0];
   ERL_NIF_TERM ex;
   ERL_NIF_TERM eys = argv[1];
@@ -1111,7 +1111,7 @@ enif_mcl_bn_g2_lagrange_interpolation(ErlNifEnv* env, int argc, ERL_NIF_TERM con
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_g2_eval_polynomial(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_g2_eval_polynomial(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   mclBnFr x;
 
@@ -1127,9 +1127,9 @@ enif_mcl_bn_g2_eval_polynomial(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv
     return enif_make_badarg(env);
   }
 
-  mclBnG2* cs;
+  mclBnG2 *cs;
   mclBnG2 res;
-  cs = (mclBnG2*)calloc(k, sizeof(mclBnG2));
+  cs = (mclBnG2 *)calloc(k, sizeof(mclBnG2));
   ERL_NIF_TERM ecs = argv[0];
   ERL_NIF_TERM ec;
 
@@ -1161,55 +1161,55 @@ enif_mcl_bn_g2_eval_polynomial(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv
 #define MCL_BN_GT_BINOP(OP) MCL_BN_BINOP(mclBnGT, get_gt, OP, enif_return_gt)
 
 static ERL_NIF_TERM
-enif_mcl_bn_gt_neg(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_gt_neg(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   MCL_BN_GT_UNOP(mclBnGT_neg)
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_gt_inv(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_gt_inv(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   MCL_BN_GT_UNOP(mclBnGT_inv)
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_gt_inv_generic(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_gt_inv_generic(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   MCL_BN_GT_UNOP(mclBnGT_invGeneric)
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_gt_sqr(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_gt_sqr(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   MCL_BN_GT_UNOP(mclBnGT_sqr)
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_gt_add(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_gt_add(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   MCL_BN_GT_BINOP(mclBnGT_add)
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_gt_sub(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_gt_sub(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   MCL_BN_GT_BINOP(mclBnGT_sub)
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_gt_mul(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_gt_mul(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   MCL_BN_GT_BINOP(mclBnGT_mul)
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_gt_div(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_gt_div(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   MCL_BN_GT_BINOP(mclBnGT_div)
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_gt_pow(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_gt_pow(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   mclBnFr b;
   mclBnGT a;
@@ -1225,7 +1225,7 @@ enif_mcl_bn_gt_pow(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_gt_pow_vec(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_gt_pow_vec(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   ERL_NIF_TERM gts;
   ERL_NIF_TERM gt;
@@ -1267,19 +1267,19 @@ enif_mcl_bn_gt_pow_vec(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_gt_is_equal(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_gt_is_equal(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   MCL_BN_IS_EQUAL(mclBnGT, get_gt, mclBnGT_isEqual)
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_gt_is_zero(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_gt_is_zero(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   MCL_BN_IS_X(mclBnGT, get_gt, mclBnGT_isZero)
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_gt_is_one(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_gt_is_one(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   MCL_BN_IS_X(mclBnGT, get_gt, mclBnGT_isOne)
 }
@@ -1288,7 +1288,7 @@ enif_mcl_bn_gt_is_one(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
 // Pairing
 // -----
 static ERL_NIF_TERM
-enif_mcl_bn_miller_loop(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_miller_loop(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   mclBnG1 a;
   mclBnG2 b;
@@ -1304,7 +1304,7 @@ enif_mcl_bn_miller_loop(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_miller_loop_vec(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_miller_loop_vec(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   ERL_NIF_TERM g1s;
   ERL_NIF_TERM g1;
@@ -1346,7 +1346,7 @@ enif_mcl_bn_miller_loop_vec(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_final_exp(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_final_exp(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   mclBnGT p;
   mclBnGT e;
@@ -1361,7 +1361,7 @@ enif_mcl_bn_final_exp(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_pairing(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_pairing(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   mclBnG1 a;
   mclBnG2 b;
@@ -1380,7 +1380,7 @@ enif_mcl_bn_pairing(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
 // hash_of/map_to
 // -----
 static ERL_NIF_TERM
-enif_mcl_bn_fr_hash_of(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_fr_hash_of(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   ErlNifBinary in;
   mclBnFr x;
@@ -1393,7 +1393,7 @@ enif_mcl_bn_fr_hash_of(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_fp_hash_of(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_fp_hash_of(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   ErlNifBinary in;
   mclBnFp x;
@@ -1406,7 +1406,7 @@ enif_mcl_bn_fp_hash_of(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_fp2_hash_of(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_fp2_hash_of(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   ErlNifBinary in;
   mclBnFp2 x;
@@ -1420,7 +1420,7 @@ enif_mcl_bn_fp2_hash_of(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_fp_map_to_g1(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_fp_map_to_g1(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   mclBnG1 g1;
   mclBnFp fp;
@@ -1437,7 +1437,7 @@ enif_mcl_bn_fp_map_to_g1(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_fp2_map_to_g2(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_fp2_map_to_g2(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   mclBnG2 g2;
   mclBnFp2 fp2;
@@ -1471,31 +1471,31 @@ enif_mcl_bn_fp2_map_to_g2(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
   return binary_from_buf(env, buf);
 
 static ERL_NIF_TERM
-enif_mcl_bn_fr_to_str(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_fr_to_str(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   MCL_BN_TO_STR(mclBnFr, FR_SIZE * 2, get_fr, mclBnFr_getStr, FX_MODE)
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_fp_to_str(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_fp_to_str(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   MCL_BN_TO_STR(mclBnFp, FP_SIZE * 2, get_fp, mclBnFp_getStr, FX_MODE)
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_g1_to_str(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_g1_to_str(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   MCL_BN_TO_STR(mclBnG1, G1_SIZE, get_g1, mclBnG1_getStr, GX_MODE)
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_g2_to_str(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_g2_to_str(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   MCL_BN_TO_STR(mclBnG2, G2_SIZE, get_g2, mclBnG2_getStr, GX_MODE)
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_gt_to_str(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_gt_to_str(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   MCL_BN_TO_STR(mclBnGT, GT_SIZE, get_gt, mclBnGT_getStr, GX_MODE)
 }
@@ -1509,37 +1509,37 @@ enif_mcl_bn_gt_to_str(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
                                                                                          \
   CHECK_BINARY_ARG(in);                                                                  \
                                                                                          \
-  if (FUN(&x, (const char*)in.data, in.size, MODE))                                      \
+  if (FUN(&x, (const char *)in.data, in.size, MODE))                                     \
     return error_tuple(env, "bad_string");                                               \
                                                                                          \
   return RETURN(1, env, &x);
 
 static ERL_NIF_TERM
-enif_mcl_bn_fr_from_str(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_fr_from_str(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   MCL_BN_FROM_STR(mclBnFr, mclBnFr_setStr, FX_MODE, enif_return_fr)
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_fp_from_str(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_fp_from_str(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   MCL_BN_FROM_STR(mclBnFp, mclBnFp_setStr, FX_MODE, enif_return_fp)
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_g1_from_str(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_g1_from_str(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   MCL_BN_FROM_STR(mclBnG1, mclBnG1_setStr, GX_MODE, enif_return_g1)
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_g2_from_str(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_g2_from_str(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   MCL_BN_FROM_STR(mclBnG2, mclBnG2_setStr, GX_MODE, enif_return_g2)
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_gt_from_str(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_gt_from_str(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   MCL_BN_FROM_STR(mclBnGT, mclBnGT_setStr, GX_MODE, enif_return_gt)
 }
@@ -1560,37 +1560,37 @@ enif_mcl_bn_gt_from_str(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
   return binary_from_buf_len(env, buf, SIZE);
 
 static ERL_NIF_TERM
-enif_mcl_bn_fr_compress(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_fr_compress(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   MCL_BN_COMPRESS(mclBnFr, FR_SIZE, get_fr, mclBnFr_serialize)
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_fp_compress(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_fp_compress(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   MCL_BN_COMPRESS(mclBnFp, FP_SIZE, get_fp, mclBnFp_serialize)
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_fp2_compress(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_fp2_compress(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   MCL_BN_COMPRESS(mclBnFp2, FP2_SIZE, get_fp2, mclBnFp2_serialize)
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_g1_compress(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_g1_compress(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   MCL_BN_COMPRESS(mclBnG1, FP_SIZE, get_g1, mclBnG1_serialize)
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_g2_compress(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_g2_compress(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   MCL_BN_COMPRESS(mclBnG2, FP2_SIZE, get_g2, mclBnG2_serialize)
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_gt_compress(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_gt_compress(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   MCL_BN_COMPRESS(mclBnGT, (12 * FP_SIZE), get_gt, mclBnGT_serialize)
 }
@@ -1610,37 +1610,37 @@ enif_mcl_bn_gt_compress(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
   return RETURN(1, env, &x);
 
 static ERL_NIF_TERM
-enif_mcl_bn_fr_decompress(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_fr_decompress(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   MCL_BN_DECOMPRESS(mclBnFr, mclBnFr_deserialize, enif_return_fr)
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_fp_decompress(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_fp_decompress(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   MCL_BN_DECOMPRESS(mclBnFp, mclBnFp_deserialize, enif_return_fp)
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_fp2_decompress(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_fp2_decompress(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   MCL_BN_DECOMPRESS(mclBnFp2, mclBnFp2_deserialize, enif_return_fp2)
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_g1_decompress(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_g1_decompress(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   MCL_BN_DECOMPRESS(mclBnG1, mclBnG1_deserialize, enif_return_g1)
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_g2_decompress(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_g2_decompress(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   MCL_BN_DECOMPRESS(mclBnG2, mclBnG2_deserialize, enif_return_g2)
 }
 
 static ERL_NIF_TERM
-enif_mcl_bn_gt_decompress(ErlNifEnv* env, int argc, ERL_NIF_TERM const argv[])
+enif_mcl_bn_gt_decompress(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[])
 {
   MCL_BN_DECOMPRESS(mclBnGT, mclBnGT_deserialize, enif_return_gt)
 }

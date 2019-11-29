@@ -39,6 +39,9 @@ powershell (New-Object System.Net.WebClient).DownloadFile('%MSYS2_URL%', '%TMP%\
 @call:log Msys2 extract
 %PSAdmin% 'Expand-7Zip "%TMP%\msys2.tar.xz" "%TMP%" ; Expand-7Zip "%TMP%\msys2.tar" "%WIN_MSYS2_ROOT%\..\"'
 
+:: Waiting 10 seconds for file-system operations to complete
+powershell -command "Start-Sleep -s 10"
+
 :: Msys is located in a subfolder "msys64" so we need to move it to the desired path
 move %WIN_MSYS2_ROOT%\..\msys64 %WIN_MSYS2_ROOT% && del /q %TMP%\msys2*.*
 

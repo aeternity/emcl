@@ -140,10 +140,15 @@ static ERL_NIF_TERM enif_return_gt(int ok, ErlNifEnv *env, const mclBnGT *x){
 }
 
 static int check_tag(ErlNifEnv *env, ERL_NIF_TERM atom, const char *tag, unsigned int sz){
-  char buf[sz + 1];
+  char *buf;
+  buf = (char*)calloc(sz + 1, sizeof(char));
   if(!enif_get_atom(env, atom, buf, sz + 1, ERL_NIF_LATIN1)
-     || strncmp(tag, buf, sz)) return 0;
+     || strncmp(tag, buf, sz)) {
+	  free(buf);
+	  return 0;
+  }
 
+  free(buf);
   return 1;
 }
 
@@ -232,7 +237,8 @@ static int get_gt(ErlNifEnv *env, ERL_NIF_TERM arg, mclBnGT *x){
   }
 
   for(int i = 0; i < 12; i++){
-    if(!get_fp(env, array[i+1], &x->d[i])) return 0;
+    if(!get_fp(env, array[i+1], &x->d[i])) { return 0;
+}
   }
 
   return 1;
@@ -297,14 +303,16 @@ ERL_NIF_TERM enif_mcl_bn_fr_sqr(ErlNifEnv *env, int argc, ERL_NIF_TERM const arg
 
 static
 ERL_NIF_TERM enif_mcl_bn_fr_sqrt(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[]) {
-  mclBnFr x, z;
+  mclBnFr x;
+  mclBnFr z;
 
-  if(!get_fr(env, argv[0], &x))
+  if(!get_fr(env, argv[0], &x)) {
     return enif_make_badarg(env);
+}
 
-  if(!mclBnFr_squareRoot(&z, &x))
+  if(!mclBnFr_squareRoot(&z, &x)) {
     return enif_return_fr(1, env, &z);
-  else
+  }  
     return error_tuple(env, "no_sqrt");
 }
 
@@ -366,27 +374,50 @@ ERL_NIF_TERM enif_mcl_bn_fr_lagrange_interpolation(ErlNifEnv *env, int argc, ERL
     return enif_make_badarg(env);
   }
 
-  unsigned int k, i = 0;
+  unsigned int k;
+  unsigned int i = 0;
   if(!enif_get_list_length(env, argv[0], &k)) {
     return enif_make_badarg(env);
   }
 
-  mclBnFr xs[k], ys[k], res;
-  ERL_NIF_TERM exs = argv[0], ex, eys = argv[1], ey;
+  mclBnFr *xs;
+  mclBnFr *ys;
+  mclBnFr res;
+  xs = (mclBnFr*)calloc(k, sizeof(mclBnFr));
+  ys = (mclBnFr*)calloc(k, sizeof(mclBnFr));
+
+  ERL_NIF_TERM exs = argv[0];
+  ERL_NIF_TERM ex;
+  ERL_NIF_TERM eys = argv[1];
+  ERL_NIF_TERM ey;
 
   while(enif_get_list_cell(env, exs, &ex, &exs) && enif_get_list_cell(env, eys, &ey, &eys)){
-    if(!get_fr(env, ex, &xs[i]) || !get_fr(env, ey, &ys[i]))
+    if(!get_fr(env, ex, &xs[i]) || !get_fr(env, ey, &ys[i])) {
+	    free(xs);
+	    free(ys);
       return enif_make_badarg(env);
+    }
 
     i++;
   }
 
-  if(i != k) return enif_make_badarg(env);
+  if(i != k) {
+	    free(xs);
+	    free(ys);
+	  return enif_make_badarg(env);
+	  }
 
-  if(!mclBn_FrLagrangeInterpolation(&res, xs, ys, k))
+  if(!mclBn_FrLagrangeInterpolation(&res, xs, ys, k)) {
+	    free(xs);
+	    free(ys);
+
     return enif_return_fr(1, env, &res);
-  else
+  }
+  
+	    free(xs);
+	    free(ys);
     return error_tuple(env, "bad_input");
+  
 }
 
 static
@@ -399,26 +430,39 @@ ERL_NIF_TERM enif_mcl_bn_fr_eval_polynomial(ErlNifEnv *env, int argc, ERL_NIF_TE
     return enif_make_badarg(env);
   }
 
-  unsigned int k, i = 0;
+  unsigned int k;
+  unsigned int i = 0;
   if(!enif_get_list_length(env, argv[0], &k)) {
     return enif_make_badarg(env);
   }
 
-  mclBnFr cs[k], res;
-  ERL_NIF_TERM ecs = argv[0], ec;
+  mclBnFr *cs;
+  mclBnFr res;
+  cs = (mclBnFr*)calloc(k, sizeof(mclBnFr));
+
+  ERL_NIF_TERM ecs = argv[0];
+  ERL_NIF_TERM ec;
 
   while(enif_get_list_cell(env, ecs, &ec, &ecs)){
     if(!get_fr(env, ec, &cs[i++])){
+	    free(cs);
       return enif_make_badarg(env);
     }
   }
 
-  if(i != k) return enif_make_badarg(env);
+  if(i != k) {
+	    free(cs);
+	  return enif_make_badarg(env);
+  }
 
-  if(!mclBn_FrEvaluatePolynomial(&res, cs, k, &x))
+  if(!mclBn_FrEvaluatePolynomial(&res, cs, k, &x)) {
+	    free(cs);
     return enif_return_fr(1, env, &res);
-  else
+  }
+  
+	    free(cs);
     return error_tuple(env, "bad_input");
+  
 }
 
 // -----
@@ -444,15 +488,18 @@ ERL_NIF_TERM enif_mcl_bn_fp_sqr(ErlNifEnv *env, int argc, ERL_NIF_TERM const arg
 
 static
 ERL_NIF_TERM enif_mcl_bn_fp_sqrt(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[]) {
-  mclBnFp x, z;
+  mclBnFp x;
+  mclBnFp z;
 
-  if(!get_fp(env, argv[0], &x))
+  if(!get_fp(env, argv[0], &x)) {
     return enif_make_badarg(env);
+}
 
-  if(!mclBnFp_squareRoot(&z, &x))
+  if(!mclBnFp_squareRoot(&z, &x)) {
     return enif_return_fp(1, env, &z);
-  else
-    return error_tuple(env, "no_sqrt");
+  } 
+return error_tuple(env, "no_sqrt");
+
 }
 
 static
@@ -528,14 +575,16 @@ ERL_NIF_TERM enif_mcl_bn_fp2_sqr(ErlNifEnv *env, int argc, ERL_NIF_TERM const ar
 
 static
 ERL_NIF_TERM enif_mcl_bn_fp2_sqrt(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[]) {
-  mclBnFp2 x, z;
+  mclBnFp2 x;
+  mclBnFp2 z;
 
-  if(!get_fp2(env, argv[0], &x))
+  if(!get_fp2(env, argv[0], &x)) {
     return enif_make_badarg(env);
+}
 
-  if(!mclBnFp2_squareRoot(&z, &x))
+  if(!mclBnFp2_squareRoot(&z, &x)) {
     return enif_return_fp2(1, env, &z);
-  else
+  }  
     return error_tuple(env, "no_sqrt");
 }
 
@@ -608,10 +657,12 @@ ERL_NIF_TERM enif_mcl_bn_g1_sub(ErlNifEnv *env, int argc, ERL_NIF_TERM const arg
 static
 ERL_NIF_TERM enif_mcl_bn_g1_mul(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[]) {
   mclBnFr b;
-  mclBnG1 a, ab;
+  mclBnG1 a;
+  mclBnG1 ab;
 
-  if(!get_g1(env, argv[0], &a) || !get_fr(env, argv[1], &b))
+  if(!get_g1(env, argv[0], &a) || !get_fr(env, argv[1], &b)) {
     return enif_make_badarg(env);
+}
 
   mclBnG1_mul(&ab, &a, &b);
 
@@ -620,10 +671,14 @@ ERL_NIF_TERM enif_mcl_bn_g1_mul(ErlNifEnv *env, int argc, ERL_NIF_TERM const arg
 
 static
 ERL_NIF_TERM enif_mcl_bn_g1_mul_vec(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[]) {
-  ERL_NIF_TERM g1s, g1;
-  ERL_NIF_TERM frs, fr;
+  ERL_NIF_TERM g1s;
+  ERL_NIF_TERM g1;
+  ERL_NIF_TERM frs;
+  ERL_NIF_TERM fr;
   mclBnFr b;
-  mclBnG1 a, ab, res;
+  mclBnG1 a;
+  mclBnG1 ab;
+  mclBnG1 res;
 
   // We have ensured on the Erlang side that these are non-empty lists of
   // equal length.
@@ -636,14 +691,16 @@ ERL_NIF_TERM enif_mcl_bn_g1_mul_vec(ErlNifEnv *env, int argc, ERL_NIF_TERM const
     return enif_make_badarg(env);
   }
 
-  if(!get_g1(env, g1, &a) || !get_fr(env, fr, &b))
+  if(!get_g1(env, g1, &a) || !get_fr(env, fr, &b)) {
     return enif_make_badarg(env);
+}
 
   mclBnG1_mul(&res, &a, &b);
 
   while(enif_get_list_cell(env, g1s, &g1, &g1s) && enif_get_list_cell(env, frs, &fr, &frs)){
-    if(!get_g1(env, g1, &a) || !get_fr(env, fr, &b))
+    if(!get_g1(env, g1, &a) || !get_fr(env, fr, &b)) {
       return enif_make_badarg(env);
+}
 
     mclBnG1_mul(&ab, &a, &b);
     mclBnG1_add(&res, &ab, &res);
@@ -694,29 +751,49 @@ ERL_NIF_TERM enif_mcl_bn_g1_lagrange_interpolation(ErlNifEnv *env, int argc, ERL
     return enif_make_badarg(env);
   }
 
-  unsigned int k, i = 0;
+  unsigned int k;
+  unsigned int i = 0;
   if(!enif_get_list_length(env, argv[0], &k)) {
     return enif_make_badarg(env);
   }
 
-  mclBnFr xs[k];
-  mclBnG1 ys[k], res;
-  ERL_NIF_TERM exs = argv[0], ex, eys = argv[1], ey;
+  mclBnFr *xs;
+  xs = (mclBnFr*)calloc(k, sizeof(mclBnFr));
+
+  mclBnG1 *ys;
+  mclBnG1 res;
+  ys = (mclBnG1*)calloc(k, sizeof(mclBnG1));
+  ERL_NIF_TERM exs = argv[0];
+  ERL_NIF_TERM ex;
+  ERL_NIF_TERM eys = argv[1];
+  ERL_NIF_TERM ey;
 
   while(enif_get_list_cell(env, exs, &ex, &exs) && enif_get_list_cell(env, eys, &ey, &eys)){
     if(!get_fr(env, ex, &xs[i]) || !get_g1(env, ey, &ys[i])){
+	    free(xs);
+	    free(ys);
       return enif_make_badarg(env);
     }
 
     i++;
   }
 
-  if(i != k) return enif_make_badarg(env);
+  if(i != k) {
+	    free(xs);
+	    free(ys);
+	  return enif_make_badarg(env);
+  }
 
-  if(!mclBn_G1LagrangeInterpolation(&res, xs, ys, k))
+  if(!mclBn_G1LagrangeInterpolation(&res, xs, ys, k)) {
+	    free(xs);
+	    free(ys);
     return enif_return_g1(1, env, &res);
-  else
+  }
+  
+	    free(xs);
+	    free(ys);
     return error_tuple(env, "bad_input");
+  
 }
 
 static
@@ -729,26 +806,38 @@ ERL_NIF_TERM enif_mcl_bn_g1_eval_polynomial(ErlNifEnv *env, int argc, ERL_NIF_TE
     return enif_make_badarg(env);
   }
 
-  unsigned int k, i = 0;
+  unsigned int k;
+  unsigned int i = 0;
   if(!enif_get_list_length(env, argv[0], &k)) {
     return enif_make_badarg(env);
   }
 
-  mclBnG1 cs[k], res;
-  ERL_NIF_TERM ecs = argv[0], ec;
+  mclBnG1 *cs;
+  mclBnG1 res;
+  cs = (mclBnG1*)calloc(k, sizeof(mclBnG1));
+  ERL_NIF_TERM ecs = argv[0];
+  ERL_NIF_TERM ec;
 
   while(enif_get_list_cell(env, ecs, &ec, &ecs)){
     if(!get_g1(env, ec, &cs[i++])){
+	    free(cs);
       return enif_make_badarg(env);
     }
   }
 
-  if(i != k) return enif_make_badarg(env);
+  if(i != k) {
+	    free(cs);
+	  return enif_make_badarg(env);
+  }
 
-  if(!mclBn_G1EvaluatePolynomial(&res, cs, k, &x))
+  if(!mclBn_G1EvaluatePolynomial(&res, cs, k, &x)) {
+	    free(cs);
     return enif_return_g1(1, env, &res);
-  else
+  }
+  
+	    free(cs);
     return error_tuple(env, "bad_input");
+  
 }
 
 // -----
@@ -785,10 +874,12 @@ ERL_NIF_TERM enif_mcl_bn_g2_sub(ErlNifEnv *env, int argc, ERL_NIF_TERM const arg
 static
 ERL_NIF_TERM enif_mcl_bn_g2_mul(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[]) {
   mclBnFr b;
-  mclBnG2 a, ab;
+  mclBnG2 a;
+  mclBnG2 ab;
 
-  if(!get_g2(env, argv[0], &a) || !get_fr(env, argv[1], &b))
+  if(!get_g2(env, argv[0], &a) || !get_fr(env, argv[1], &b)) {
     return enif_make_badarg(env);
+}
 
   mclBnG2_mul(&ab, &a, &b);
 
@@ -797,10 +888,14 @@ ERL_NIF_TERM enif_mcl_bn_g2_mul(ErlNifEnv *env, int argc, ERL_NIF_TERM const arg
 
 static
 ERL_NIF_TERM enif_mcl_bn_g2_mul_vec(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[]) {
-  ERL_NIF_TERM g2s, g2;
-  ERL_NIF_TERM frs, fr;
+  ERL_NIF_TERM g2s;
+  ERL_NIF_TERM g2;
+  ERL_NIF_TERM frs;
+  ERL_NIF_TERM fr;
   mclBnFr b;
-  mclBnG2 a, ab, res;
+  mclBnG2 a;
+  mclBnG2 ab;
+  mclBnG2 res;
 
   // We have ensured on the Erlang side that these are non-empty lists of
   // equal length.
@@ -813,14 +908,16 @@ ERL_NIF_TERM enif_mcl_bn_g2_mul_vec(ErlNifEnv *env, int argc, ERL_NIF_TERM const
     return enif_make_badarg(env);
   }
 
-  if(!get_g2(env, g2, &a) || !get_fr(env, fr, &b))
+  if(!get_g2(env, g2, &a) || !get_fr(env, fr, &b)) {
     return enif_make_badarg(env);
+}
 
   mclBnG2_mul(&res, &a, &b);
 
   while(enif_get_list_cell(env, g2s, &g2, &g2s) && enif_get_list_cell(env, frs, &fr, &frs)){
-    if(!get_g2(env, g2, &a) || !get_fr(env, fr, &b))
+    if(!get_g2(env, g2, &a) || !get_fr(env, fr, &b)) {
       return enif_make_badarg(env);
+}
 
     mclBnG2_mul(&ab, &a, &b);
     mclBnG2_add(&res, &ab, &res);
@@ -871,29 +968,49 @@ ERL_NIF_TERM enif_mcl_bn_g2_lagrange_interpolation(ErlNifEnv *env, int argc, ERL
     return enif_make_badarg(env);
   }
 
-  unsigned int k, i = 0;
+  unsigned int k;
+  unsigned int i = 0;
   if(!enif_get_list_length(env, argv[0], &k)) {
     return enif_make_badarg(env);
   }
 
-  mclBnFr xs[k];
-  mclBnG2 ys[k], res;
-  ERL_NIF_TERM exs = argv[0], ex, eys = argv[1], ey;
+  mclBnFr *xs;
+  xs = (mclBnFr*)calloc(k, sizeof(mclBnFr));
+  mclBnG2 *ys;
+  mclBnG2 res;
+  ys = (mclBnG2*)calloc(k, sizeof(mclBnG2));
+  ERL_NIF_TERM exs = argv[0];
+  ERL_NIF_TERM ex;
+  ERL_NIF_TERM eys = argv[1];
+  ERL_NIF_TERM ey;
 
   while(enif_get_list_cell(env, exs, &ex, &exs) && enif_get_list_cell(env, eys, &ey, &eys)){
     if(!get_fr(env, ex, &xs[i]) || !get_g2(env, ey, &ys[i])){
+	    free(xs);
+	    free(ys);
       return enif_make_badarg(env);
     }
 
     i++;
   }
 
-  if(i != k) return enif_make_badarg(env);
+  if(i != k) {
+	    free(xs);
+	    free(ys);
+	  return enif_make_badarg(env);
+  }
 
-  if(!mclBn_G2LagrangeInterpolation(&res, xs, ys, k))
+  if(!mclBn_G2LagrangeInterpolation(&res, xs, ys, k)) {
+	    free(xs);
+	    free(ys);
     return enif_return_g2(1, env, &res);
-  else
+  }
+  
+	  
+	    free(xs);
+	    free(ys);
     return error_tuple(env, "bad_input");
+	  
 }
 
 static
@@ -906,26 +1023,38 @@ ERL_NIF_TERM enif_mcl_bn_g2_eval_polynomial(ErlNifEnv *env, int argc, ERL_NIF_TE
     return enif_make_badarg(env);
   }
 
-  unsigned int k, i = 0;
+  unsigned int k;
+  unsigned int i = 0;
   if(!enif_get_list_length(env, argv[0], &k)) {
     return enif_make_badarg(env);
   }
 
-  mclBnG2 cs[k], res;
-  ERL_NIF_TERM ecs = argv[0], ec;
+  mclBnG2 *cs;
+  mclBnG2 res;
+  cs = (mclBnG2*)calloc(k, sizeof(mclBnG2));
+  ERL_NIF_TERM ecs = argv[0];
+  ERL_NIF_TERM ec;
 
   while(enif_get_list_cell(env, ecs, &ec, &ecs)){
     if(!get_g2(env, ec, &cs[i++])){
+	    free(cs);
       return enif_make_badarg(env);
     }
   }
 
-  if(i != k) return enif_make_badarg(env);
+  if(i != k) {
+	    free(cs);
+	  return enif_make_badarg(env);
+  }
 
-  if(!mclBn_G2EvaluatePolynomial(&res, cs, k, &x))
+  if(!mclBn_G2EvaluatePolynomial(&res, cs, k, &x)) {
+	    free(cs);
     return enif_return_g2(1, env, &res);
-  else
+  }
+  
+	    free(cs);
     return error_tuple(env, "bad_input");
+  
 }
 
 // -----
@@ -977,10 +1106,12 @@ ERL_NIF_TERM enif_mcl_bn_gt_div(ErlNifEnv *env, int argc, ERL_NIF_TERM const arg
 static
 ERL_NIF_TERM enif_mcl_bn_gt_pow(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[]) {
   mclBnFr b;
-  mclBnGT a, ab;
+  mclBnGT a;
+  mclBnGT ab;
 
-  if(!get_gt(env, argv[0], &a) || !get_fr(env, argv[1], &b))
+  if(!get_gt(env, argv[0], &a) || !get_fr(env, argv[1], &b)) {
     return enif_make_badarg(env);
+}
 
   mclBnGT_pow(&ab, &a, &b);
 
@@ -989,10 +1120,14 @@ ERL_NIF_TERM enif_mcl_bn_gt_pow(ErlNifEnv *env, int argc, ERL_NIF_TERM const arg
 
 static
 ERL_NIF_TERM enif_mcl_bn_gt_pow_vec(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[]) {
-  ERL_NIF_TERM gts, gt;
-  ERL_NIF_TERM frs, fr;
+  ERL_NIF_TERM gts;
+  ERL_NIF_TERM gt;
+  ERL_NIF_TERM frs;
+  ERL_NIF_TERM fr;
   mclBnFr b;
-  mclBnGT a, ab, res;
+  mclBnGT a;
+  mclBnGT ab;
+  mclBnGT res;
 
   // We have ensured on the Erlang side that these are non-empty lists of
   // equal length.
@@ -1005,14 +1140,16 @@ ERL_NIF_TERM enif_mcl_bn_gt_pow_vec(ErlNifEnv *env, int argc, ERL_NIF_TERM const
     return enif_make_badarg(env);
   }
 
-  if(!get_gt(env, gt, &a) || !get_fr(env, fr, &b))
+  if(!get_gt(env, gt, &a) || !get_fr(env, fr, &b)) {
     return enif_make_badarg(env);
+}
 
   mclBnGT_pow(&res, &a, &b);
 
   while(enif_get_list_cell(env, gts, &gt, &gts) && enif_get_list_cell(env, frs, &fr, &frs)){
-    if(!get_gt(env, gt, &a) || !get_fr(env, fr, &b))
+    if(!get_gt(env, gt, &a) || !get_fr(env, fr, &b)) {
       return enif_make_badarg(env);
+}
 
     mclBnGT_pow(&ab, &a, &b);
     mclBnGT_mul(&res, &ab, &res);
@@ -1045,8 +1182,9 @@ ERL_NIF_TERM enif_mcl_bn_miller_loop(ErlNifEnv *env, int argc, ERL_NIF_TERM cons
   mclBnG2 b;
   mclBnGT e;
 
-  if(argc != 2 || !get_g1(env, argv[0], &a) || !get_g2(env, argv[1], &b))
+  if(argc != 2 || !get_g1(env, argv[0], &a) || !get_g2(env, argv[1], &b)) {
     return enif_make_badarg(env);
+}
 
   mclBn_millerLoop(&e, &a, &b);
 
@@ -1055,11 +1193,14 @@ ERL_NIF_TERM enif_mcl_bn_miller_loop(ErlNifEnv *env, int argc, ERL_NIF_TERM cons
 
 static
 ERL_NIF_TERM enif_mcl_bn_miller_loop_vec(ErlNifEnv *env, int argc, ERL_NIF_TERM const argv[]) {
-  ERL_NIF_TERM g1s, g1;
-  ERL_NIF_TERM g2s, g2;
+  ERL_NIF_TERM g1s;
+  ERL_NIF_TERM g1;
+  ERL_NIF_TERM g2s;
+  ERL_NIF_TERM g2;
   mclBnG1 a;
   mclBnG2 b;
-  mclBnGT e, res;
+  mclBnGT e;
+  mclBnGT res;
 
   // We have ensured on the Erlang side that these are non-empty lists of
   // equal length.
@@ -1071,14 +1212,16 @@ ERL_NIF_TERM enif_mcl_bn_miller_loop_vec(ErlNifEnv *env, int argc, ERL_NIF_TERM 
     return enif_make_badarg(env);
   }
 
-  if(!get_g1(env, g1, &a) || !get_g2(env, g2, &b))
+  if(!get_g1(env, g1, &a) || !get_g2(env, g2, &b)) {
     return enif_make_badarg(env);
+}
 
   mclBn_pairing(&res, &a, &b);
 
   while(enif_get_list_cell(env, g1s, &g1, &g1s) && enif_get_list_cell(env, g2s, &g2, &g2s)){
-    if(!get_g1(env, g1, &a) || !get_g2(env, g2, &b))
+    if(!get_g1(env, g1, &a) || !get_g2(env, g2, &b)) {
       return enif_make_badarg(env);
+}
 
     mclBn_pairing(&e, &a, &b);
     mclBnGT_mul(&res, &e, &res);
@@ -1092,8 +1235,9 @@ ERL_NIF_TERM enif_mcl_bn_final_exp(ErlNifEnv *env, int argc, ERL_NIF_TERM const 
   mclBnGT p;
   mclBnGT e;
 
-  if(argc != 1 || !get_gt(env, argv[0], &p))
+  if(argc != 1 || !get_gt(env, argv[0], &p)) {
     return enif_make_badarg(env);
+}
 
   mclBn_finalExp(&e, &p);
 
@@ -1106,8 +1250,9 @@ ERL_NIF_TERM enif_mcl_bn_pairing(ErlNifEnv *env, int argc, ERL_NIF_TERM const ar
   mclBnG2 b;
   mclBnGT e;
 
-  if(argc != 2 || !get_g1(env, argv[0], &a) || !get_g2(env, argv[1], &b))
+  if(argc != 2 || !get_g1(env, argv[0], &a) || !get_g2(env, argv[1], &b)) {
     return enif_make_badarg(env);
+}
 
   mclBn_pairing(&e, &a, &b);
 
@@ -1159,8 +1304,9 @@ ERL_NIF_TERM enif_mcl_bn_fp_map_to_g1(ErlNifEnv *env, int argc, ERL_NIF_TERM con
   mclBnG1 g1;
   mclBnFp fp;
 
-  if(!get_fp(env, argv[0], &fp))
+  if(!get_fp(env, argv[0], &fp)) {
     return enif_make_badarg(env);
+}
 
   if(mclBnFp_mapToG1(&g1, &fp)) {
     return error_tuple(env, "map_to_failed");
@@ -1174,8 +1320,9 @@ ERL_NIF_TERM enif_mcl_bn_fp2_map_to_g2(ErlNifEnv *env, int argc, ERL_NIF_TERM co
   mclBnG2 g2;
   mclBnFp2 fp2;
 
-  if(!get_fp2(env, argv[0], &fp2))
+  if(!get_fp2(env, argv[0], &fp2)) {
     return enif_make_badarg(env);
+}
 
   if(mclBnFp2_mapToG2(&g2, &fp2)) {
     return error_tuple(env, "map_to_failed");
